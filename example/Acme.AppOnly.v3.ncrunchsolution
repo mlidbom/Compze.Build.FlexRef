@@ -1,0 +1,12 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AllowParallelTestExecution>True</AllowParallelTestExecution>
+    <CustomBuildProperties>
+      <Value>UsePackageReference_Acme_Core = true</Value>
+      <Value>UsePackageReference_Acme_Utilities = true</Value>
+    </CustomBuildProperties>
+    <EnableRDI>False</EnableRDI>
+    <RdiConfigured>True</RdiConfigured>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+</SolutionConfiguration>
