@@ -13,6 +13,10 @@
   <!--
     Step 1: Read the solution file content during VS/Rider/dotnet-sln builds.
 
+    Works with both classic .sln and the newer .slnx (XML) format —
+    $(SolutionPath) points at whichever format is in use, and both
+    contain .csproj filenames that the .Contains() check can match.
+
     This is skipped entirely when:
     - NCrunch is running (NCrunch uses its own mechanism via Custom Build Properties)
     - No solution context exists (e.g. bare `dotnet build MyProject.csproj`)

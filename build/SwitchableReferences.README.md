@@ -7,7 +7,7 @@ Tooling for switching between `ProjectReference` and `PackageReference` based on
 - **Default: ProjectReference** — always safe, always builds from latest source.
 - **PackageReference is used only when** the project is explicitly absent from the solution or an override says so.
 - **Two detection mechanisms** work together:
-  - **VS/Rider/dotnet**: Auto-detects from the `.sln` file content at build time.
+  - **VS/Rider/dotnet**: Auto-detects from the solution file content (`.sln` or `.slnx`) at build time.
   - **NCrunch**: Uses explicit per-dependency flags set in `.v3.ncrunchsolution` Custom Build Properties (because NCrunch's isolated workspace makes solution-path detection unreliable).
 
 ## Constraints
@@ -130,7 +130,7 @@ When you need to make a new dependency switchable, you need three things:
 | NuGet package name | `Acme.Utilities` |
 | Override property name | `UsePackageReference_Acme_Utilities` (dots → underscores) |
 | Internal flag property | `_UsePackage_AcmeUtilities` (your choice, just be consistent) |
-| `.csproj` filename to detect | `Acme.Utilities.csproj` (as it appears in the `.sln` file) |
+| `.csproj` filename to detect | `Acme.Utilities.csproj` (as it appears in the `.sln`/`.slnx` file) |
 
 Dots are invalid in MSBuild property names (they map to XML element names). Always use underscores.
 
@@ -151,7 +151,7 @@ Copy this block and replace the four placeholders:
 | `{DESCRIPTION}` | Human-readable comment | `Acme.Utilities` |
 | `{FLAG}` | Internal flag property name | `_UsePackage_AcmeUtilities` |
 | `{OVERRIDE_PROPERTY}` | Override property name | `UsePackageReference_Acme_Utilities` |
-| `{CSPROJ_FILENAME}` | `.csproj` filename as in the `.sln` | `Acme.Utilities.csproj` |
+| `{CSPROJ_FILENAME}` | `.csproj` filename as in the `.sln`/`.slnx` | `Acme.Utilities.csproj` |
 
 ### Add to each consuming `.csproj`
 
@@ -272,5 +272,6 @@ And !$(_SwitchRef_SolutionContent.Contains('src\Acme.Utilities\Acme.Utilities.cs
 
 - **Linear maintenance scaling**: Each new switchable dependency requires a property block in `Directory.Build.props`, conditional ItemGroups in consuming `.csproj` files, and potentially new entries in `.v3.ncrunchsolution` files. This is manageable for a moderate number of dependencies.
 - **Version drift**: When using ProjectReference, you build against whatever source is checked out — not the pinned package version. This is by design (you want the latest source), but be aware of it.
+- **`.slnx` compatibility**: The `.Contains()` detection works with both classic `.sln` and the newer `.slnx` (XML) format. Both formats include `.csproj` filenames in their text content, so `ReadAllText` + `.Contains()` matches correctly in either case. Tested with .NET 10 SDK which defaults to `.slnx`.
 - **`.csproj` filename uniqueness**: The `.Contains()` detection assumes `.csproj` filenames are unique across the solution. Use more specific path fragments if this isn't the case.
 - **`$(SolutionPath)` in NCrunch**: Unreliable in NCrunch's isolated workspace — this is why NCrunch uses explicit overrides instead of auto-detection. The two paths never interfere with each other.

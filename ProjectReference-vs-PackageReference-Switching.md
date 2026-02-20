@@ -122,7 +122,7 @@ The most fully automatic approach reads `$(SolutionPath)` at build time and dyna
 - Zero per-developer configuration; the right reference type is always used based on context.
 
 **Cons:**
-- The MSBuild script is complex and fragile — relies on string-matching `.sln` file content, breaks if project names don't match package IDs, and can confuse VS IntelliSense or Roslyn analyzer tooling.
+- The MSBuild script is complex and fragile — relies on string-matching solution file content (`.sln` or `.slnx`), breaks if project names don't match package IDs, and can confuse VS IntelliSense or Roslyn analyzer tooling.
 - NCrunch: **Untested, and `$(SolutionPath)` is unreliable in NCrunch's isolated workspace.**
 
 ---
@@ -277,8 +277,11 @@ For the full solution, just launch the IDE normally — no env vars, no script n
 
 ## Known Limitations and Concerns
 
+### `.slnx` Compatibility
+The `.Contains()` detection works with both classic `.sln` and the newer `.slnx` (XML) format introduced in .NET 10. Both formats include `.csproj` filenames in their text content — `.sln` as path entries, `.slnx` as `<Project Path="..." />` attributes — so `ReadAllText` + `.Contains()` matches correctly in either case. `$(SolutionPath)` points at whichever format is in use.
+
 ### String Matching Fragility
-The `.Contains('LibA.csproj')` check matches against raw `.sln` text. If two projects share a filename in different folders (e.g., `LibA.csproj` and `Company.LibA.csproj`), you'd get a false positive. Use a more specific path fragment in the check if this is a risk.
+The `.Contains('LibA.csproj')` check matches against raw solution file text (`.sln` or `.slnx`). If two projects share a filename in different folders (e.g., `LibA.csproj` and `Company.LibA.csproj`), you'd get a false positive. Use a more specific path fragment in the check if this is a risk.
 
 ### `$(SolutionPath)` in CLI Builds
 `dotnet build` without a solution context leaves `$(SolutionPath)` empty, which falls through to ProjectReference (the safe default). This may fail if the sibling repo isn't checked out alongside. Adding an `Exists()` guard on the ProjectReference path handles this:
@@ -313,6 +316,9 @@ The recommended hybrid approach has been packaged as reusable tooling in the `bu
 | `build/examples/Directory.Build.props.example` | Example showing per-dependency flag declarations |
 | `build/examples/MyApp.csproj.example` | Example showing conditional ItemGroups in a project file |
 | `build/examples/ConsumerOnly.v3.ncrunchsolution.example` | Example NCrunch solution settings with overrides |
+| `example/` | Working example workspace with projects, solutions, and local NuGet feed |
+
+The `example/` directory contains a fully functional three-project workspace (`Acme.Core` → `Acme.Utilities` → `Acme.App`) with two solutions (`Acme.Full.slnx` and `Acme.AppOnly.slnx`) that exercise both the ProjectReference and PackageReference paths, including NCrunch grid node support.
 
 See [build/SwitchableReferences.README.md](build/SwitchableReferences.README.md) for full instructions.
 
