@@ -2,12 +2,16 @@
 
 ## Problem Statement
 
-In .NET solutions that span multiple repositories or contain shared libraries published as NuGet packages, developers often want:
+The goal is to be able to open solutions containing various combinations of projects, so that you can:
 
-- **ProjectReference** when developing locally (for fast iteration, debugging, and always-current source)
-- **PackageReference** when the library source isn't available or on CI (for deterministic, versioned builds)
+- **Work on subsets of large library projects** without pulling in everything, incurring build time costs and costs in IDE load having to analyze everything.
+- **Work on a project that consumes a large library** in two modes:
+  - With the library as a **NuGet PackageReference** (fast, no need to build the library from source).
+  - With the library projects **in the solution**, participating in refactoring and NCrunch testing via **ProjectReference**.
 
-Manually toggling references is error-prone and doesn't scale. Several approaches exist to automate this, each with distinct trade-offs — especially when NCrunch is involved.
+**Which solution you open should control this.** It does not necessarily have to be entirely auto-detected from the solution contents — some setup/configuration in NCrunch or elsewhere is acceptable, as long as the goal is achieved in a stable, reliable way.
+
+Several approaches exist to implement this switching, each with distinct trade-offs — especially when NCrunch is involved.
 
 ---
 
