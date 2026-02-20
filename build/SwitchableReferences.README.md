@@ -7,7 +7,7 @@ Tooling for switching between `ProjectReference` and `PackageReference` based on
 - **Default: ProjectReference** — always safe, always builds from latest source.
 - **PackageReference is used only when** the project is explicitly absent from the solution or an override says so.
 - **Two detection mechanisms** work together:
-  - **VS/Rider/dotnet**: Auto-detects from the solution file content (`.sln` or `.slnx`) at build time.
+  - **VS/Rider/dotnet**: Parses the `.slnx` file to extract project filenames at build time.
   - **NCrunch**: Uses explicit per-dependency flags set in `.v3.ncrunchsolution` Custom Build Properties (because NCrunch's isolated workspace makes solution-path detection unreliable).
 
 ## Constraints
@@ -43,20 +43,20 @@ In your `Directory.Build.props` (create one at the repo root if you don't have o
   <!-- Declare switchable dependencies.
        Each dependency needs two lines — copy this block and fill in:
          - The override property name: UsePackageReference_{PackageName with dots as underscores}
-         - The .csproj filename to look for in the solution
+         - The .csproj filename to match (wrapped in | delimiters)
   -->
   <PropertyGroup>
     <!-- Acme.Utilities -->
     <_UsePackage_AcmeUtilities Condition="'$(UsePackageReference_Acme_Utilities)' == 'true'">true</_UsePackage_AcmeUtilities>
     <_UsePackage_AcmeUtilities Condition="'$(_UsePackage_AcmeUtilities)' != 'true'
-                                        And '$(_SwitchRef_SolutionContent)' != ''
-                                        And !$(_SwitchRef_SolutionContent.Contains('Acme.Utilities.csproj'))">true</_UsePackage_AcmeUtilities>
+                                        And '$(_SwitchRef_SolutionProjects)' != ''
+                                        And !$(_SwitchRef_SolutionProjects.Contains('|Acme.Utilities.csproj|'))">true</_UsePackage_AcmeUtilities>
 
     <!-- Acme.Core -->
     <_UsePackage_AcmeCore Condition="'$(UsePackageReference_Acme_Core)' == 'true'">true</_UsePackage_AcmeCore>
     <_UsePackage_AcmeCore Condition="'$(_UsePackage_AcmeCore)' != 'true'
-                                   And '$(_SwitchRef_SolutionContent)' != ''
-                                   And !$(_SwitchRef_SolutionContent.Contains('Acme.Core.csproj'))">true</_UsePackage_AcmeCore>
+                                   And '$(_SwitchRef_SolutionProjects)' != ''
+                                   And !$(_SwitchRef_SolutionProjects.Contains('|Acme.Core.csproj|'))">true</_UsePackage_AcmeCore>
   </PropertyGroup>
 
 </Project>
@@ -130,7 +130,7 @@ When you need to make a new dependency switchable, you need three things:
 | NuGet package name | `Acme.Utilities` |
 | Override property name | `UsePackageReference_Acme_Utilities` (dots → underscores) |
 | Internal flag property | `_UsePackage_AcmeUtilities` (your choice, just be consistent) |
-| `.csproj` filename to detect | `Acme.Utilities.csproj` (as it appears in the `.sln`/`.slnx` file) |
+| `.csproj` filename to detect | `Acme.Utilities.csproj` (as it appears in the `.slnx` file) |
 
 Dots are invalid in MSBuild property names (they map to XML element names). Always use underscores.
 
@@ -142,8 +142,8 @@ Copy this block and replace the four placeholders:
     <!-- {DESCRIPTION} -->
     <{FLAG} Condition="'$({OVERRIDE_PROPERTY})' == 'true'">true</{FLAG}>
     <{FLAG} Condition="'$({FLAG})' != 'true'
-                      And '$(_SwitchRef_SolutionContent)' != ''
-                      And !$(_SwitchRef_SolutionContent.Contains('{CSPROJ_FILENAME}'))">true</{FLAG}>
+                      And '$(_SwitchRef_SolutionProjects)' != ''
+                      And !$(_SwitchRef_SolutionProjects.Contains('|{CSPROJ_FILENAME}|'))">true</{FLAG}>
 ```
 
 | Placeholder | What to fill in | Example |
@@ -151,7 +151,7 @@ Copy this block and replace the four placeholders:
 | `{DESCRIPTION}` | Human-readable comment | `Acme.Utilities` |
 | `{FLAG}` | Internal flag property name | `_UsePackage_AcmeUtilities` |
 | `{OVERRIDE_PROPERTY}` | Override property name | `UsePackageReference_Acme_Utilities` |
-| `{CSPROJ_FILENAME}` | `.csproj` filename as in the `.sln`/`.slnx` | `Acme.Utilities.csproj` |
+| `{CSPROJ_FILENAME}` | `.csproj` filename as in the `.slnx` | `Acme.Utilities.csproj` |
 
 ### Add to each consuming `.csproj`
 
@@ -191,8 +191,8 @@ Each property gets its own `<Value>` element inside `<CustomBuildProperties>`.
 
 | Scenario | `$(NCrunch)` | Solution content | Flag value | Result |
 |---|---|---|---|---|
-| VS/Rider — full solution (library included) | unset | contains `.csproj` | empty → false | **ProjectReference** |
-| VS/Rider — consumer-only (library absent) | unset | does NOT contain `.csproj` | `true` | **PackageReference** |
+| VS/Rider — full solution (library included) | unset | project in `.slnx` | empty → false | **ProjectReference** |
+| VS/Rider — consumer-only (library absent) | unset | project NOT in `.slnx` | `true` | **PackageReference** |
 | NCrunch — full solution workspace | `1` | skipped | empty → false | **ProjectReference** |
 | NCrunch — consumer-only workspace | `1` | skipped | `true` (from `.v3.ncrunchsolution`) | **PackageReference** |
 | `dotnet build` (no solution context) | unset | empty | empty → false | **ProjectReference** |
@@ -259,12 +259,7 @@ Use conditional `<ItemGroup>` (the pattern shown above), not conditional attribu
 Close and reopen the solution, or run a manual NuGet restore. VS caches reference resolution aggressively and sometimes needs a nudge after changing conditions.
 
 ### The `.Contains()` check matches the wrong project
-If you have projects with similar names (e.g., `Utilities.csproj` and `Acme.Utilities.csproj`), use a more specific path fragment in the `.Contains()` check:
-
-```xml
-<!-- More specific: include part of the path -->
-And !$(_SwitchRef_SolutionContent.Contains('src\Acme.Utilities\Acme.Utilities.csproj'))
-```
+The `|` delimiters in `_SwitchRef_SolutionProjects` prevent most false positives (e.g. `Company.Acme.Core.csproj` won't match `|Acme.Core.csproj|`). If you have genuinely ambiguous filenames, the solution is to rename the `.csproj` file to be unique.
 
 ---
 
@@ -272,6 +267,6 @@ And !$(_SwitchRef_SolutionContent.Contains('src\Acme.Utilities\Acme.Utilities.cs
 
 - **Linear maintenance scaling**: Each new switchable dependency requires a property block in `Directory.Build.props`, conditional ItemGroups in consuming `.csproj` files, and potentially new entries in `.v3.ncrunchsolution` files. This is manageable for a moderate number of dependencies.
 - **Version drift**: When using ProjectReference, you build against whatever source is checked out — not the pinned package version. This is by design (you want the latest source), but be aware of it.
-- **`.slnx` compatibility**: The `.Contains()` detection works with both classic `.sln` and the newer `.slnx` (XML) format. Both formats include `.csproj` filenames in their text content, so `ReadAllText` + `.Contains()` matches correctly in either case. Tested with .NET 10 SDK which defaults to `.slnx`.
-- **`.csproj` filename uniqueness**: The `.Contains()` detection assumes `.csproj` filenames are unique across the solution. Use more specific path fragments if this isn't the case.
+- **`.slnx` only**: The shared infrastructure parses `.slnx` (XML solution format). Classic `.sln` files are not supported. .NET 10+ SDK defaults to `.slnx`; for older SDKs, migrate with `dotnet sln migrate`.
+- **`.csproj` filename uniqueness**: The `|` delimiters ensure exact filename matching, so `Company.Acme.Core.csproj` won't false-match against `|Acme.Core.csproj|`. However, if two genuinely different projects share the same `.csproj` filename, rename one.
 - **`$(SolutionPath)` in NCrunch**: Unreliable in NCrunch's isolated workspace — this is why NCrunch uses explicit overrides instead of auto-detection. The two paths never interfere with each other.

@@ -122,7 +122,7 @@ The most fully automatic approach reads `$(SolutionPath)` at build time and dyna
 - Zero per-developer configuration; the right reference type is always used based on context.
 
 **Cons:**
-- The MSBuild script is complex and fragile — relies on string-matching solution file content (`.sln` or `.slnx`), breaks if project names don't match package IDs, and can confuse VS IntelliSense or Roslyn analyzer tooling.
+- The MSBuild script is complex and fragile — relies on string-matching `.slnx` file content, breaks if project names don't match package IDs, and can confuse VS IntelliSense or Roslyn analyzer tooling.
 - NCrunch: **Untested, and `$(SolutionPath)` is unreliable in NCrunch's isolated workspace.**
 
 ---
@@ -178,35 +178,29 @@ UsePackageReference_MyProj_LibB=true
 
 ### `Directory.Build.props` (repo root)
 
-Centralize the flag derivation logic:
+Import `SwitchableReferences.props` (which reads the `.slnx` and exposes `_SwitchRef_SolutionProjects` — a string where each project filename is wrapped in `|` delimiters), then derive flags:
 
 ```xml
-<!-- Step 1: Read solution content once, during VS/Rider builds only.
-     Skipped entirely when NCrunch is running. -->
-<PropertyGroup Condition="'$(NCrunch)' != '1'
-                       And '$(SolutionPath)' != ''
-                       And '$(SolutionPath)' != '*Undefined*'
-                       And Exists('$(SolutionPath)')">
-  <_SolutionContent>
-    $([System.IO.File]::ReadAllText('$(SolutionPath)'))
-  </_SolutionContent>
-</PropertyGroup>
+<!-- Import shared infrastructure -->
+<Import Project="$(MSBuildThisFileDirectory)build\SwitchableReferences.props" />
 
-<!-- Step 2: Derive all flags centrally -->
+<!-- Derive all flags centrally -->
 <PropertyGroup>
   <!-- LibA -->
   <_UsePackage_LibA Condition="'$(UsePackageReference_MyProj_LibA)' == 'true'">true</_UsePackage_LibA>
   <_UsePackage_LibA Condition="'$(_UsePackage_LibA)' != 'true'
-                             And '$(_SolutionContent)' != ''
-                             And !$(_SolutionContent.Contains('LibA.csproj'))">true</_UsePackage_LibA>
+                             And '$(_SwitchRef_SolutionProjects)' != ''
+                             And !$(_SwitchRef_SolutionProjects.Contains('|LibA.csproj|'))">true</_UsePackage_LibA>
 
   <!-- LibB -->
   <_UsePackage_LibB Condition="'$(UsePackageReference_MyProj_LibB)' == 'true'">true</_UsePackage_LibB>
   <_UsePackage_LibB Condition="'$(_UsePackage_LibB)' != 'true'
-                             And '$(_SolutionContent)' != ''
-                             And !$(_SolutionContent.Contains('LibB.csproj'))">true</_UsePackage_LibB>
+                             And '$(_SwitchRef_SolutionProjects)' != ''
+                             And !$(_SwitchRef_SolutionProjects.Contains('|LibB.csproj|'))">true</_UsePackage_LibB>
 </PropertyGroup>
 ```
+
+The `|` delimiters ensure exact filename matching — `Company.LibA.csproj` won't false-match against `|LibA.csproj|`.
 
 ### In each `.csproj` that has a switchable dependency
 
@@ -265,10 +259,10 @@ For the full solution, just launch the IDE normally — no env vars, no script n
 
 ## How Each Scenario Flows
 
-| Scenario | `$(NCrunch)` | `$(_SolutionContent)` | `_UsePackage_LibA` | Result |
+| Scenario | `$(NCrunch)` | `$(_SwitchRef_SolutionProjects)` | `_UsePackage_LibA` | Result |
 |---|---|---|---|---|
-| VS/Rider, full solution (LibA included) | unset | set, contains `LibA.csproj` | false | **ProjectReference** |
-| VS/Rider, consumer-only (LibA absent) | unset | set, no `LibA.csproj` | true | **PackageReference** |
+| VS/Rider, full solution (LibA included) | unset | set, contains `|LibA.csproj|` | false | **ProjectReference** |
+| VS/Rider, consumer-only (LibA absent) | unset | set, no `|LibA.csproj|` | true | **PackageReference** |
 | NCrunch, full solution workspace | `1` | skipped | unset → false | **ProjectReference** |
 | NCrunch, consumer-only workspace | `1` | skipped | true (from workspace) | **PackageReference** |
 | `dotnet build` (no solution context) | unset | empty | false | **ProjectReference** |
@@ -277,11 +271,11 @@ For the full solution, just launch the IDE normally — no env vars, no script n
 
 ## Known Limitations and Concerns
 
-### `.slnx` Compatibility
-The `.Contains()` detection works with both classic `.sln` and the newer `.slnx` (XML) format introduced in .NET 10. Both formats include `.csproj` filenames in their text content — `.sln` as path entries, `.slnx` as `<Project Path="..." />` attributes — so `ReadAllText` + `.Contains()` matches correctly in either case. `$(SolutionPath)` points at whichever format is in use.
+### `.slnx` Only
+The shared infrastructure parses `.slnx` (XML solution format) using `Regex` property functions to extract project filenames. Classic `.sln` files are not supported. .NET 10+ SDK defaults to `.slnx`; for older SDKs, migrate with `dotnet sln migrate`.
 
-### String Matching Fragility
-The `.Contains('LibA.csproj')` check matches against raw solution file text (`.sln` or `.slnx`). If two projects share a filename in different folders (e.g., `LibA.csproj` and `Company.LibA.csproj`), you'd get a false positive. Use a more specific path fragment in the check if this is a risk.
+### String Matching
+The `|` delimiters around each extracted filename in `_SwitchRef_SolutionProjects` ensure exact matching — `Company.LibA.csproj` won't false-match against `|LibA.csproj|`. However, if two genuinely different projects share the same `.csproj` filename, rename one to be unique.
 
 ### `$(SolutionPath)` in CLI Builds
 `dotnet build` without a solution context leaves `$(SolutionPath)` empty, which falls through to ProjectReference (the safe default). This may fail if the sibling repo isn't checked out alongside. Adding an `Exists()` guard on the ProjectReference path handles this:
