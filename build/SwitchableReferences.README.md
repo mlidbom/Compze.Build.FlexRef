@@ -8,7 +8,7 @@ Tooling for switching between `ProjectReference` and `PackageReference` based on
 - **PackageReference is used only when** the project is explicitly absent from the solution or an override says so.
 - **Two detection mechanisms** work together:
   - **VS/Rider/dotnet**: Auto-detects from the `.sln` file content at build time.
-  - **NCrunch**: Uses explicit per-dependency flags set in `.ncrunchworkspace` Custom Build Properties (because NCrunch's isolated workspace makes solution-path detection unreliable).
+  - **NCrunch**: Uses explicit per-dependency flags set in `.v3.ncrunchsolution` Custom Build Properties (because NCrunch's isolated workspace makes solution-path detection unreliable).
 
 ## Constraints
 
@@ -78,29 +78,34 @@ In every `.csproj` that references a switchable dependency, replace the plain `P
 
 That's it for the build side. The `!= 'true'` condition means: if the flag is empty, unset, or anything other than `true`, default to ProjectReference.
 
-### 4. Configure NCrunch workspace files
+### 4. Configure NCrunch solution files
 
-For each `.sln` in your repo, create or update the corresponding `.ncrunchworkspace` file.
+For each `.sln` in your repo, create or update the corresponding `.v3.ncrunchsolution` file.
 
 **Full solution** (all library projects included — nothing to configure):
 
 ```xml
-<WorkspaceSettings>
-  <CustomBuildProperties></CustomBuildProperties>
-</WorkspaceSettings>
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties />
+  </Settings>
+</SolutionConfiguration>
 ```
 
 **Consumer-only solution** (some libraries are NOT in the solution and should come from NuGet):
 
 ```xml
-<WorkspaceSettings>
-  <CustomBuildProperties>
-    UsePackageReference_Acme_Utilities=true;UsePackageReference_Acme_Core=true
-  </CustomBuildProperties>
-</WorkspaceSettings>
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>UsePackageReference_Acme_Utilities = true</Value>
+      <Value>UsePackageReference_Acme_Core = true</Value>
+    </CustomBuildProperties>
+  </Settings>
+</SolutionConfiguration>
 ```
 
-The `CustomBuildProperties` value is a semicolon-separated list of `Name=Value` pairs. These are propagated to NCrunch grid nodes automatically.
+Each `<Value>` element is a `Name = Value` pair. These are propagated to NCrunch grid nodes automatically.
 
 ### 5. Commit everything
 
@@ -108,7 +113,7 @@ All of these files are safe to commit:
 - `build/SwitchableReferences.props`
 - `Directory.Build.props`
 - Modified `.csproj` files
-- `.ncrunchworkspace` files
+- `.v3.ncrunchsolution` files
 
 No gitignored files, no per-developer local overrides needed.
 
@@ -170,15 +175,15 @@ Copy this block and replace the four placeholders:
 | `{VERSION}` | Package version | `3.1.0` |
 | `{PROJECT_PATH}` | Relative path to the `.csproj` | `..\Acme.Utilities\Acme.Utilities.csproj` |
 
-### Update `.ncrunchworkspace` files
+### Update `.v3.ncrunchsolution` files
 
 For every solution that does NOT include the library project, add the override property to `CustomBuildProperties`:
 
-```
-UsePackageReference_Acme_Utilities=true
+```xml
+<Value>UsePackageReference_Acme_Utilities = true</Value>
 ```
 
-Separate multiple properties with semicolons.
+Each property gets its own `<Value>` element inside `<CustomBuildProperties>`.
 
 ---
 
@@ -189,7 +194,7 @@ Separate multiple properties with semicolons.
 | VS/Rider — full solution (library included) | unset | contains `.csproj` | empty → false | **ProjectReference** |
 | VS/Rider — consumer-only (library absent) | unset | does NOT contain `.csproj` | `true` | **PackageReference** |
 | NCrunch — full solution workspace | `1` | skipped | empty → false | **ProjectReference** |
-| NCrunch — consumer-only workspace | `1` | skipped | `true` (from `.ncrunchworkspace`) | **PackageReference** |
+| NCrunch — consumer-only workspace | `1` | skipped | `true` (from `.v3.ncrunchsolution`) | **PackageReference** |
 | `dotnet build` (no solution context) | unset | empty | empty → false | **ProjectReference** |
 | CI with explicit override | unset | N/A | `true` (from env/CLI) | **PackageReference** |
 
@@ -237,7 +242,7 @@ This is useful for CI pipelines that should always use NuGet packages.
 ## Troubleshooting
 
 ### NCrunch shows stale test results after editing a library project
-The `.ncrunchworkspace` for your current solution is probably overriding the flag to use PackageReference. Check `CustomBuildProperties` — remove the override for that library so NCrunch uses ProjectReference.
+The `.v3.ncrunchsolution` for your current solution is probably overriding the flag to use PackageReference. Check `CustomBuildProperties` — remove the override for that library so NCrunch uses ProjectReference.
 
 ### Build error: project file not found
 The ProjectReference path in the `.csproj` doesn't resolve. Either:
@@ -265,7 +270,7 @@ And !$(_SwitchRef_SolutionContent.Contains('src\Acme.Utilities\Acme.Utilities.cs
 
 ## Known Limitations
 
-- **Linear maintenance scaling**: Each new switchable dependency requires a property block in `Directory.Build.props`, conditional ItemGroups in consuming `.csproj` files, and potentially new entries in `.ncrunchworkspace` files. This is manageable for a moderate number of dependencies.
+- **Linear maintenance scaling**: Each new switchable dependency requires a property block in `Directory.Build.props`, conditional ItemGroups in consuming `.csproj` files, and potentially new entries in `.v3.ncrunchsolution` files. This is manageable for a moderate number of dependencies.
 - **Version drift**: When using ProjectReference, you build against whatever source is checked out — not the pinned package version. This is by design (you want the latest source), but be aware of it.
 - **`.csproj` filename uniqueness**: The `.Contains()` detection assumes `.csproj` filenames are unique across the solution. Use more specific path fragments if this isn't the case.
 - **`$(SolutionPath)` in NCrunch**: Unreliable in NCrunch's isolated workspace — this is why NCrunch uses explicit overrides instead of auto-detection. The two paths never interfere with each other.

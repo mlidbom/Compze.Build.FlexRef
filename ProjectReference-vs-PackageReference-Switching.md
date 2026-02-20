@@ -155,7 +155,7 @@ The most fully automatic approach reads `$(SolutionPath)` at build time and dyna
 - **ProjectReference items must live inside `.csproj` files**, not in `Directory.Build.props` or other imported files. NCrunch's manipulation and workspacing only targets project files.
 - **NCrunch sets `$(NCrunch) = '1'`** as an MSBuild property during all its builds, which can be used as a condition.
 - **NCrunch exposes `$(NCrunchOriginalSolutionPath)` and `$(NCrunchOriginalSolutionDir)`** for advanced scenarios.
-- **Custom Build Properties** set in `.ncrunchworkspace` files are propagated to grid nodes.
+- **Custom Build Properties** set in `.v3.ncrunchsolution` files are propagated to grid nodes.
 
 ---
 
@@ -223,24 +223,29 @@ Keep the actual reference items in the project file (required for NCrunch compat
 
 Use conditional `ItemGroup` (not conditional items) — NuGet restore has had historical issues with conditions on individual `PackageReference` items not being respected correctly during Visual Studio's design-time builds.
 
-### NCrunch `.ncrunchworkspace` Files
+### NCrunch `.v3.ncrunchsolution` Files
 
 Full solution (nothing to set — the default is ProjectReference):
 
 ```xml
-<WorkspaceSettings>
-  <CustomBuildProperties></CustomBuildProperties>
-</WorkspaceSettings>
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties />
+  </Settings>
+</SolutionConfiguration>
 ```
 
 Consumer-only solution (library not present):
 
 ```xml
-<WorkspaceSettings>
-  <CustomBuildProperties>
-    UsePackageReference_MyProj_LibA=true;UsePackageReference_MyProj_LibB=true
-  </CustomBuildProperties>
-</WorkspaceSettings>
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>UsePackageReference_MyProj_LibA = true</Value>
+      <Value>UsePackageReference_MyProj_LibB = true</Value>
+    </CustomBuildProperties>
+  </Settings>
+</SolutionConfiguration>
 ```
 
 ### VS/Rider Builds (Non-NCrunch)
@@ -290,7 +295,7 @@ The `.Contains('LibA.csproj')` check matches against raw `.sln` text. If two pro
 ```
 
 ### Linear Maintenance Scaling
-Each new switchable library needs: a new property block in `Directory.Build.props`, a new conditional ItemGroup pair in the consuming `.csproj`, and potentially new entries in every `.ncrunchworkspace` file. For a handful of libraries this is fine; for dozens it becomes tedious. A custom MSBuild task or SDK-style NuGet package that automates the pattern would be worth it at scale.
+Each new switchable library needs: a new property block in `Directory.Build.props`, a new conditional ItemGroup pair in the consuming `.csproj`, and potentially new entries in every `.v3.ncrunchsolution` file. For a handful of libraries this is fine; for dozens it becomes tedious. A custom MSBuild task or SDK-style NuGet package that automates the pattern would be worth it at scale.
 
 ### Version Drift Risk
 When the ProjectReference path is active, you build against whatever commit of the library is currently checked out — not the pinned package version. This is "safe" in the sense of always being correct at build time, but can silently introduce API mismatches that only surface when you publish and switch back to PackageReference.
@@ -307,7 +312,7 @@ The recommended hybrid approach has been packaged as reusable tooling in the `bu
 | `build/SwitchableReferences.README.md` | Step-by-step usage guide with copy-paste templates |
 | `build/examples/Directory.Build.props.example` | Example showing per-dependency flag declarations |
 | `build/examples/MyApp.csproj.example` | Example showing conditional ItemGroups in a project file |
-| `build/examples/ConsumerOnly.ncrunchworkspace.example` | Example NCrunch workspace with overrides |
+| `build/examples/ConsumerOnly.v3.ncrunchsolution.example` | Example NCrunch solution settings with overrides |
 
 See [build/SwitchableReferences.README.md](build/SwitchableReferences.README.md) for full instructions.
 

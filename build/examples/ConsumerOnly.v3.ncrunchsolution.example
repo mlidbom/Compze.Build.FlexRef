@@ -1,0 +1,20 @@
+<!--
+  Example .v3.ncrunchsolution for a consumer-only solution where
+  Acme.Utilities and Acme.Core are NOT in the solution and should
+  come from NuGet packages.
+
+  Place this file alongside the .sln file with the same base name:
+    ConsumerOnly.sln
+    ConsumerOnly.v3.ncrunchsolution
+
+  For a full solution where all libraries are included,
+  omit the CustomBuildProperties element (or leave it empty).
+-->
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>UsePackageReference_Acme_Utilities = true</Value>
+      <Value>UsePackageReference_Acme_Core = true</Value>
+    </CustomBuildProperties>
+  </Settings>
+</SolutionConfiguration>
