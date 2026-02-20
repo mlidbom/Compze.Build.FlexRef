@@ -1,4 +1,3 @@
-using Acme.App;
 using Xunit;
 
 namespace Acme.App.Tests;
