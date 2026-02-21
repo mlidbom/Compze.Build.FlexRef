@@ -39,11 +39,12 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Pack
-        run: >
-          dotnet pack
-          src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj
-          --configuration Release
-          --output ./artifacts
+        run: |
+          dotnet pack \
+            src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj \
+            --configuration Release \
+            --output ./artifacts \
+            -p:PackageReleaseNotes="$(cat RELEASE_NOTES.md)"
 
       - name: Push to NuGet.org
         run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
