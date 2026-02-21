@@ -20,7 +20,7 @@ class FlexRefConfigurationFile
     }
 
     public DirectoryInfo RootDirectory { get; }
-    public string ConfigFilePath { get; }
+    public FileInfo ConfigFile { get; }
     public bool UseAutoDiscover { get; private set; }
     public List<string> AutoDiscoverExclusions { get; private set; } = [];
     public List<string> ExplicitPackageNames { get; private set; } = [];
@@ -28,16 +28,16 @@ class FlexRefConfigurationFile
     public FlexRefConfigurationFile(DirectoryInfo rootDirectory)
     {
         RootDirectory = rootDirectory;
-        ConfigFilePath = Path.Combine(rootDirectory.FullName, ConfigFileName);
+        ConfigFile = new FileInfo(Path.Combine(rootDirectory.FullName, ConfigFileName));
     }
 
-    public bool Exists() => File.Exists(ConfigFilePath);
+    public bool Exists() => ConfigFile.Exists;
 
     public void Load()
     {
-        var document = XDocument.Load(ConfigFilePath);
+        var document = XDocument.Load(ConfigFile.FullName);
         var rootElement = document.Root
-                       ?? throw new InvalidOperationException($"Invalid config file: {ConfigFilePath} has no root element.");
+                       ?? throw new InvalidOperationException($"Invalid config file: {ConfigFile.FullName} has no root element.");
 
         var autoDiscoverElement = rootElement.Element(Tags.AutoDiscover);
 
@@ -79,7 +79,7 @@ class FlexRefConfigurationFile
 
         var packageIds = packableProjects.Select(project => project.PackageId!).ToList();
         WriteDefaultConfigFile(packageIds);
-        Console.WriteLine($"  Created: {ConfigFilePath}");
+        Console.WriteLine($"  Created: {ConfigFile.FullName}");
     }
 
     void WriteDefaultConfigFile(List<string> discoveredPackageIds)
@@ -101,6 +101,6 @@ class FlexRefConfigurationFile
         }
 
         var document = new XDocument(rootElement);
-        document.SaveWithoutDeclaration(ConfigFilePath);
+        document.SaveWithoutDeclaration(ConfigFile.FullName);
     }
 }

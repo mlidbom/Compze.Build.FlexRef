@@ -9,22 +9,21 @@ partial class SlnxSolution
         public static void UpdateOrCreate(SlnxSolution solution)
         {
             var absentPackages = solution.FindAbsentFlexReferences();
-            var ncrunchFilePath = DeriveNCrunchFilePath(solution.SlnxFullPath);
+            var ncrunchFile = DeriveNCrunchFile(solution.SlnxFile);
 
-            if(File.Exists(ncrunchFilePath))
-                UpdateExistingNCrunchFile(ncrunchFilePath, absentPackages);
+            if(ncrunchFile.Exists)
+                UpdateExistingNCrunchFile(ncrunchFile, absentPackages);
             else
-                CreateNewNCrunchFile(ncrunchFilePath, absentPackages);
+                CreateNewNCrunchFile(ncrunchFile, absentPackages);
         }
 
-        static string DeriveNCrunchFilePath(string slnxFullPath)
+        static FileInfo DeriveNCrunchFile(FileInfo slnxFile)
         {
-            var directory = Path.GetDirectoryName(slnxFullPath)!;
-            var solutionStem = Path.GetFileNameWithoutExtension(slnxFullPath);
-            return Path.Combine(directory, solutionStem + ".v3.ncrunchsolution");
+            var solutionStem = Path.GetFileNameWithoutExtension(slnxFile.Name);
+            return new FileInfo(Path.Combine(slnxFile.DirectoryName!, solutionStem + ".v3.ncrunchsolution"));
         }
 
-        static void CreateNewNCrunchFile(string filePath, List<FlexReference> absentPackages)
+        static void CreateNewNCrunchFile(FileInfo file, List<FlexReference> absentPackages)
         {
             var settingsElement = new XElement("Settings");
 
@@ -39,13 +38,13 @@ partial class SlnxSolution
             var document = new XDocument(
                 new XElement("SolutionConfiguration", settingsElement));
 
-            document.SaveWithoutDeclaration(filePath);
-            Console.WriteLine($"  Created: {filePath} ({absentPackages.Count} absent package(s))");
+            document.SaveWithoutDeclaration(file.FullName);
+            Console.WriteLine($"  Created: {file.FullName} ({absentPackages.Count} absent package(s))");
         }
 
-        static void UpdateExistingNCrunchFile(string filePath, List<FlexReference> absentPackages)
+        static void UpdateExistingNCrunchFile(FileInfo file, List<FlexReference> absentPackages)
         {
-            var document = XDocument.Load(filePath);
+            var document = XDocument.Load(file.FullName);
             var rootElement = document.Root!;
 
             var settingsElement = rootElement.Element("Settings");
@@ -85,8 +84,8 @@ partial class SlnxSolution
             if(customBuildProperties != null && !customBuildProperties.HasElements)
                 customBuildProperties.Remove();
 
-            document.SaveWithoutDeclaration(filePath);
-            Console.WriteLine($"  Updated: {filePath} ({absentPackages.Count} absent package(s))");
+            document.SaveWithoutDeclaration(file.FullName);
+            Console.WriteLine($"  Updated: {file.FullName} ({absentPackages.Count} absent package(s))");
         }
     }
 }

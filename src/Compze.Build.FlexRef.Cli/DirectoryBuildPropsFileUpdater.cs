@@ -6,17 +6,17 @@ class DirectoryBuildPropsFileUpdater
 {
     const string FileName = "Directory.Build.props";
 
-    readonly string _filePath;
+    readonly FileInfo _file;
     readonly XDocument _document;
     readonly XElement _rootElement;
 
     DirectoryBuildPropsFileUpdater(DirectoryInfo rootDirectory)
     {
-        _filePath = Path.Combine(rootDirectory.FullName, FileName);
+        _file = new FileInfo(Path.Combine(rootDirectory.FullName, FileName));
 
-        if(File.Exists(_filePath))
+        if(_file.Exists)
         {
-            _document = XDocument.Load(_filePath);
+            _document = XDocument.Load(_file.FullName);
             _rootElement = _document.Root
                 ?? throw new InvalidOperationException($"Invalid {FileName}: missing root element.");
         } else
@@ -40,8 +40,8 @@ class DirectoryBuildPropsFileUpdater
         AddFlexRefImport();
         AddUsePackageReferenceProperties();
 
-        _document.SaveWithoutDeclaration(_filePath);
-        Console.WriteLine($"  Updated: {_filePath}");
+        _document.SaveWithoutDeclaration(_file.FullName);
+        Console.WriteLine($"  Updated: {_file.FullName}");
     }
 
     void RemoveExistingFlexRefImport()

@@ -4,12 +4,12 @@ namespace Compze.Build.FlexRef.Cli;
 
 partial class SlnxSolution
 {
-    public string SlnxFullPath { get; }
+    public FileInfo SlnxFile { get; }
     public List<string> ProjectFileNames { get; }
 
-    SlnxSolution(string slnxFullPath, List<string> projectFileNames)
+    SlnxSolution(FileInfo slnxFile, List<string> projectFileNames)
     {
-        SlnxFullPath = slnxFullPath;
+        SlnxFile = slnxFile;
         ProjectFileNames = projectFileNames;
     }
 

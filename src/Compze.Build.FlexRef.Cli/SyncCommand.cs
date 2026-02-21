@@ -10,7 +10,7 @@ static class SyncCommand
 
         if(!configFile.Exists())
         {
-            Console.Error.WriteLine($"Error: {configFile.ConfigFilePath} not found.");
+            Console.Error.WriteLine($"Error: {configFile.ConfigFile.FullName} not found.");
             Console.Error.WriteLine("Run 'flexref init' first to create the configuration.");
             return 1;
         }

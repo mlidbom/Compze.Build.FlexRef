@@ -80,8 +80,8 @@ partial class ManagedProject
             foreach(var package in referencedPackages)
             {
                 var relativeProjectPath = ComputeRelativePathWithBackslashes(
-                    consumingCsprojFile.FullName,
-                    package.CsprojFile.FullName);
+                    consumingCsprojFile,
+                    package.CsprojFile);
 
                 rootElement.Add(
                     new XComment($" {package.PackageId} — flex reference "),
@@ -97,10 +97,10 @@ partial class ManagedProject
             }
         }
 
-        static string ComputeRelativePathWithBackslashes(string fromCsprojFullPath, string toCsprojFullPath)
+        static string ComputeRelativePathWithBackslashes(FileInfo fromCsproj, FileInfo toCsproj)
         {
-            var fromDirectory = Path.GetDirectoryName(fromCsprojFullPath)!;
-            var relativePath = Path.GetRelativePath(fromDirectory, toCsprojFullPath);
+            var fromDirectory = fromCsproj.DirectoryName!;
+            var relativePath = Path.GetRelativePath(fromDirectory, toCsproj.FullName);
             return relativePath.Replace('/', '\\');
         }
 

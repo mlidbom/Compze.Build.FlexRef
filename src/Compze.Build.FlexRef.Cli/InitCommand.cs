@@ -10,7 +10,7 @@ static class InitCommand
 
         if (configFile.Exists())
         {
-            Console.Error.WriteLine($"Error: {configFile.ConfigFilePath} already exists.");
+            Console.Error.WriteLine($"Error: {configFile.ConfigFile.FullName} already exists.");
             Console.Error.WriteLine("Delete it first if you want to re-initialize.");
             return 1;
         }

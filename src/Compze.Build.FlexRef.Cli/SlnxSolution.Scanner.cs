@@ -8,17 +8,11 @@ partial class SlnxSolution
     {
         static readonly string[] DirectoriesToSkip = ["bin", "obj", "node_modules", ".git", ".vs", ".idea"];
 
-        public static List<SlnxSolution> FindAndParseAll(DirectoryInfo rootDirectory)
-        {
-            var solutions = new List<SlnxSolution>();
-            foreach(var slnxFile in FindSlnxFilesRecursively(rootDirectory))
-            {
-                var solution = ParseSingleSlnx(slnxFile);
-                if(solution != null)
-                    solutions.Add(solution);
-            }
-            return solutions;
-        }
+        public static List<SlnxSolution> FindAndParseAll(DirectoryInfo rootDirectory) =>
+            FindSlnxFilesRecursively(rootDirectory)
+               .Select(ParseSlnx)
+               .OfType<SlnxSolution>()
+               .ToList();
 
         static IEnumerable<FileInfo> FindSlnxFilesRecursively(DirectoryInfo directory)
         {
@@ -35,20 +29,18 @@ partial class SlnxSolution
             }
         }
 
-        static SlnxSolution? ParseSingleSlnx(FileInfo slnxFile)
+        static SlnxSolution? ParseSlnx(FileInfo slnxFile)
         {
             try
             {
                 var document = XDocument.Load(slnxFile.FullName);
                 var projectFileNames = document.Descendants("Project")
-                    .Select(element => element.Attribute("Path")?.Value)
-                    .Where(path => path != null)
-                    .Select(path => Path.GetFileName(path!))
-                    .ToList();
+                                               .Select(element => element.Attribute("Path")?.Value)
+                                               .Where(path => path != null)
+                                               .Select(path => Path.GetFileName(path!))
+                                               .ToList();
 
-                return new SlnxSolution(
-                    slnxFullPath: slnxFile.FullName,
-                    projectFileNames: projectFileNames);
+                return new SlnxSolution(slnxFile: slnxFile, projectFileNames: projectFileNames);
             }
             catch(Exception exception)
             {
