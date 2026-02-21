@@ -16,8 +16,7 @@ partial class ManagedProject
             {
                 foreach(var project in packableProjects)
                 {
-                    if(configuration.AutoDiscoverExclusions
-                                    .Any(exclusion => exclusion.EqualsIgnoreCase(project.PackageId!)))
+                    if(configuration.AutoDiscoverExclusions.Any(exclusion => exclusion.EqualsIgnoreCase(project.PackageId!)))
                         continue;
 
                     resolvedPackages.Add(new FlexReference(project));
@@ -26,21 +25,17 @@ partial class ManagedProject
 
             foreach(var explicitPackageName in configuration.ExplicitPackageNames)
             {
-                if(resolvedPackages.Any(existing =>
-                                            existing.PackageId.EqualsIgnoreCase(explicitPackageName)))
+                if(resolvedPackages.Any(existing => existing.PackageId.EqualsIgnoreCase(explicitPackageName)))
                     continue;
 
-                var matchingProject = packableProjects
-                   .FirstOrDefault(project =>
-                                       project.PackageId!.EqualsIgnoreCase(explicitPackageName));
+                var matchingProject = packableProjects.FirstOrDefault(project => project.PackageId!.EqualsIgnoreCase(explicitPackageName));
 
                 if(matchingProject != null)
                 {
                     resolvedPackages.Add(new FlexReference(matchingProject));
                 } else
                 {
-                    Console.Error.WriteLine(
-                        $"  Warning: Explicit package '{explicitPackageName}' was not found in any project.");
+                    Console.Error.WriteLine($"  Warning: Explicit package '{explicitPackageName}' was not found in any project.");
                 }
             }
 
@@ -49,8 +44,7 @@ partial class ManagedProject
                 var expectedFileName = package.PackageId + ".csproj";
                 if(!package.CsprojFile.Name.EqualsIgnoreCase(expectedFileName))
                 {
-                    Console.Error.WriteLine(
-                        $"  Warning: Package '{package.PackageId}' is in project file '{package.CsprojFile.Name}' (expected '{expectedFileName}')");
+                    Console.Error.WriteLine($"  Warning: Package '{package.PackageId}' is in project file '{package.CsprojFile.Name}' (expected '{expectedFileName}')");
                 }
             }
 
