@@ -49,7 +49,7 @@ static class SyncCommand
         return 0;
     }
 
-    static List<SwitchablePackageInfo> ResolveSwitchablePackages(
+    static List<FlexReference> ResolveSwitchablePackages(
         FlexRefConfigurationFile configuration,
         List<DiscoveredProject> allProjects)
     {
@@ -57,7 +57,7 @@ static class SyncCommand
             .Where(project => project.IsPackable && project.PackageId != null)
             .ToList();
 
-        var resolvedPackages = new List<SwitchablePackageInfo>();
+        var resolvedPackages = new List<FlexReference>();
 
         if (configuration.UseAutoDiscover)
         {
@@ -67,7 +67,7 @@ static class SyncCommand
                     .Any(exclusion => exclusion.Equals(project.PackageId!, StringComparison.OrdinalIgnoreCase)))
                     continue;
 
-                resolvedPackages.Add(new SwitchablePackageInfo(
+                resolvedPackages.Add(new FlexReference(
                     PackageId: project.PackageId!,
                     CsprojFileName: project.CsprojFileName,
                     CsprojFullPath: project.CsprojFullPath));
@@ -86,7 +86,7 @@ static class SyncCommand
 
             if (matchingProject != null)
             {
-                resolvedPackages.Add(new SwitchablePackageInfo(
+                resolvedPackages.Add(new FlexReference(
                     PackageId: matchingProject.PackageId!,
                     CsprojFileName: matchingProject.CsprojFileName,
                     CsprojFullPath: matchingProject.CsprojFullPath));

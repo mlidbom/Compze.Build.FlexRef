@@ -6,7 +6,7 @@ static class DirectoryBuildPropsFileUpdater
 {
     const string FileName = "Directory.Build.props";
 
-    public static void UpdateOrCreate(DirectoryInfo rootDirectory, List<SwitchablePackageInfo> switchablePackages)
+    public static void UpdateOrCreate(DirectoryInfo rootDirectory, List<FlexReference> switchablePackages)
     {
         var filePath = Path.Combine(rootDirectory.FullName, FileName);
         XDocument document;
@@ -68,7 +68,7 @@ static class DirectoryBuildPropsFileUpdater
             new XElement("Import", new XAttribute("Project", importPath)));
     }
 
-    static void AddUsePackageReferenceProperties(XElement rootElement, List<SwitchablePackageInfo> switchablePackages)
+    static void AddUsePackageReferenceProperties(XElement rootElement, List<FlexReference> switchablePackages)
     {
         if (switchablePackages.Count == 0) return;
 

@@ -1,6 +1,6 @@
 namespace Compze.Build.FlexRef.Cli;
 
-record SwitchablePackageInfo(
+record FlexReference(
     string PackageId,
     string CsprojFileName,
     string CsprojFullPath)

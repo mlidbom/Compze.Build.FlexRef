@@ -4,7 +4,7 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class NCrunchSolutionFileUpdater
 {
-    public static void UpdateOrCreate(SlnxSolutionInfo solution, List<SwitchablePackageInfo> switchablePackages)
+    public static void UpdateOrCreate(SlnxSolutionInfo solution, List<FlexReference> switchablePackages)
     {
         var absentPackages = switchablePackages
             .Where(package => !solution.ProjectFileNames
@@ -27,7 +27,7 @@ static class NCrunchSolutionFileUpdater
         return Path.Combine(directory, solutionStem + ".v3.ncrunchsolution");
     }
 
-    static void CreateNewNCrunchFile(string filePath, List<SwitchablePackageInfo> absentPackages)
+    static void CreateNewNCrunchFile(string filePath, List<FlexReference> absentPackages)
     {
         var settingsElement = new XElement("Settings");
 
@@ -46,7 +46,7 @@ static class NCrunchSolutionFileUpdater
         Console.WriteLine($"  Created: {filePath} ({absentPackages.Count} absent package(s))");
     }
 
-    static void UpdateExistingNCrunchFile(string filePath, List<SwitchablePackageInfo> absentPackages)
+    static void UpdateExistingNCrunchFile(string filePath, List<FlexReference> absentPackages)
     {
         var document = XDocument.Load(filePath);
         var rootElement = document.Root!;

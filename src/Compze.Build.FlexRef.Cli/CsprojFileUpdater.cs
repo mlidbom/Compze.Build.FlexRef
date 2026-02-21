@@ -4,7 +4,7 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class CsprojFileUpdater
 {
-    public static void UpdateIfNeeded(DiscoveredProject project, List<SwitchablePackageInfo> switchablePackages)
+    public static void UpdateIfNeeded(DiscoveredProject project, List<FlexReference> switchablePackages)
     {
         var referencedSwitchablePackages = DetermineReferencedSwitchablePackages(project, switchablePackages);
 
@@ -21,11 +21,11 @@ static class CsprojFileUpdater
         Console.WriteLine($"  Updated: {project.CsprojFullPath} ({referencedSwitchablePackages.Count} switchable reference(s))");
     }
 
-    static List<SwitchablePackageInfo> DetermineReferencedSwitchablePackages(
+    static List<FlexReference> DetermineReferencedSwitchablePackages(
         DiscoveredProject project,
-        List<SwitchablePackageInfo> switchablePackages)
+        List<FlexReference> switchablePackages)
     {
-        var result = new List<SwitchablePackageInfo>();
+        var result = new List<FlexReference>();
 
         foreach (var package in switchablePackages)
         {
@@ -45,7 +45,7 @@ static class CsprojFileUpdater
         return result.OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    static void RemoveExistingSwitchableReferences(XElement rootElement, List<SwitchablePackageInfo> switchablePackages)
+    static void RemoveExistingSwitchableReferences(XElement rootElement, List<FlexReference> switchablePackages)
     {
         // First pass: remove entire ItemGroups conditioned on UsePackageReference_* for switchable packages
         var conditionalItemGroups = rootElement.Elements("ItemGroup")
@@ -74,7 +74,7 @@ static class CsprojFileUpdater
         }
     }
 
-    static bool IsReferenceToSwitchablePackage(XElement element, List<SwitchablePackageInfo> switchablePackages)
+    static bool IsReferenceToSwitchablePackage(XElement element, List<FlexReference> switchablePackages)
     {
         if (element.Name.LocalName == "PackageReference")
         {
@@ -99,7 +99,7 @@ static class CsprojFileUpdater
     static void AppendSwitchableReferencePairs(
         XElement rootElement,
         string consumingCsprojFullPath,
-        List<SwitchablePackageInfo> referencedPackages)
+        List<FlexReference> referencedPackages)
     {
         foreach (var package in referencedPackages)
         {
