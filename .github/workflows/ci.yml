@@ -21,8 +21,10 @@ jobs:
       - name: Pack NuGet package
         run: dotnet pack src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj --configuration Release --output ./artifacts
 
-      - name: Publish local NuGet packages for example workspace
-        run: dotnet nuget push "example/local-nuget-feed/*.nupkg" --source "example/local-nuget-feed" || true
+      - name: Build example local NuGet feed packages
+        run: |
+          dotnet pack example/src/Acme.Core/Acme.Core.csproj --configuration Release --output example/local-packages
+          dotnet pack example/src/Acme.Utilities/Acme.Utilities.csproj --configuration Release --output example/local-packages
 
       - name: Test example — Full solution (all ProjectReferences)
         run: dotnet test example/Acme.Full.slnx
