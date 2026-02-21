@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <!-- Acme.Utilities — switchable reference -->
+  <!-- Acme.Utilities — flex reference -->
   <ItemGroup Condition="'$(UsePackageReference_Acme_Utilities)' == 'true'">
     <PackageReference Include="Acme.Utilities" Version="*-*" />
   </ItemGroup>

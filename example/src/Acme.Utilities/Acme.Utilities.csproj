@@ -6,7 +6,7 @@
     <PackageId>Acme.Utilities</PackageId>
     <Version>1.0.0</Version>
   </PropertyGroup>
-  <!-- Acme.Core — switchable reference -->
+  <!-- Acme.Core — flex reference -->
   <ItemGroup Condition="'$(UsePackageReference_Acme_Core)' == 'true'">
     <PackageReference Include="Acme.Core" Version="*-*" />
   </ItemGroup>

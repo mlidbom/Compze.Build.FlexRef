@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace Compze.Build.FlexRef.Cli;
+namespace Compze.Build.FlexRef;
 
 class FlexRefConfigurationFile
 {

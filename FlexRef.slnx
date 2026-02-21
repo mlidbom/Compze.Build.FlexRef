@@ -10,6 +10,6 @@
     <Project Path="example/tests/Acme.Utilities.Tests/Acme.Utilities.Tests.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Compze.Build.FlexRef.Cli/Compze.Build.FlexRef.Cli.csproj" />
+    <Project Path="src/Compze.Build.FlexRef/Compze.Build.FlexRef.csproj" />
   </Folder>
 </Solution>

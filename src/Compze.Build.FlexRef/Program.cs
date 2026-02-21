@@ -1,6 +1,6 @@
 using Microsoft.Build.Locator;
 
-namespace Compze.Build.FlexRef.Cli;
+namespace Compze.Build.FlexRef;
 
 static class Program
 {

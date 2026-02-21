@@ -1,6 +1,6 @@
 using Microsoft.Build.Evaluation;
 
-namespace Compze.Build.FlexRef.Cli;
+namespace Compze.Build.FlexRef;
 
 record ProjectReferenceEntry(string IncludePath, string ResolvedFileName);
 

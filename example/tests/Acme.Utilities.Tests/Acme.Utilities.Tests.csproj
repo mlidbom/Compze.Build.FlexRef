@@ -10,7 +10,7 @@
     <PackageReference Include="xunit" Version="2.6.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4" />
   </ItemGroup>
-  <!-- Acme.Utilities — switchable reference -->
+  <!-- Acme.Utilities — flex reference -->
   <ItemGroup Condition="'$(UsePackageReference_Acme_Utilities)' == 'true'">
     <PackageReference Include="Acme.Utilities" Version="*-*" />
   </ItemGroup>
