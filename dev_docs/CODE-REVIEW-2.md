@@ -8,13 +8,6 @@ The codebase is in good shape after the refactoring. `FlexRefWorkspace` is a cle
 
 ## Responsibility / Placement Issues
 
-### 1. `FindAbsentFlexReferencesFor` belongs on `SlnxSolution`
-
-`NCrunchUpdater.FindAbsentFlexReferencesFor` asks "which flex references are absent from this solution?" That's a question about the solution's own content — `SlnxSolution` owns `ProjectFileNames` and should answer it. The updater shouldn't need to dig into `solution.ProjectFileNames` directly.
-
-**File:** `NCrunchUpdater.cs` lines 95–100  
-**Suggestion:** Move to `SlnxSolution` as an instance method taking `IReadOnlyList<FlexReference>`, mirroring how `ManagedProject.FindMatchingFlexReferences` works.
-
 ### 2. `FlexReferenceResolver` is still a nested static class inside `ManagedProject`
 
 `FlexReferenceResolver.Resolve` takes a configuration and a list of projects — it doesn't operate on a single `ManagedProject` instance. It's a standalone resolution algorithm that happens to produce `FlexReference` objects from `ManagedProject` objects. Nesting it inside `ManagedProject` suggests it's an implementation detail of one project, when it's really workspace-level logic.
@@ -28,12 +21,6 @@ The codebase is in good shape after the refactoring. `FlexRefWorkspace` is a cle
 
 **File:** `ManagedProject.Scanner.cs`  
 **Suggestion:** Either extract to a top-level class or absorb the scan logic into `FlexRefWorkspace.ScanAndResolve` since that's the only caller via `ManagedProject.ScanDirectory`.
-
-### 4. `DeriveNCrunchFile` is `SlnxSolution` knowledge
-
-`NCrunchUpdater.DeriveNCrunchFile` computes the NCrunch file path from a `.slnx` file — it knows the naming convention (stem + `.v3.ncrunchsolution`). This is really the solution's knowledge about where its companion file lives. It would be natural as a property or method on `SlnxSolution`.
-
-**File:** `NCrunchUpdater.cs` lines 25–29
 
 ---
 
@@ -62,12 +49,6 @@ The class is constructed, then `Exists()` is checked, then `Load()` is called, a
 Both `FlexReferenceResolver.Resolve` (line 44) and `FlexRefConfigurationFile.CreateDefault` (line 75) independently warn when a project's `PackageId` doesn't match its `.csproj` filename. Same check, same warning text pattern, two places.
 
 **Files:** `ManagedProject.FlexReferenceResolver.cs` line 44, `FlexRefConfigurationFile.cs` line 75
-
-### 8. `ManagedProject` constructor only accessible via `Scanner`
-
-`ManagedProject`'s constructor is private and requires a `ProjectCollection` — the only way to create one is through `Scanner.ParseCsproj`. This makes the class impossible to construct in tests without a real `.csproj` file on disk and MSBuild evaluation. For unit testing `FindMatchingFlexReferences`, you'd need an internal constructor or a test-friendly factory that takes pre-computed values.
-
-**File:** `ManagedProject.cs` line 19
 
 ### 9. `FlexReference` is a `record` but doesn't benefit from record semantics
 
