@@ -19,7 +19,7 @@ partial class ManagedProject
             RemoveExistingFlexReferences(rootElement);
             AppendFlexReferencePairs(rootElement, project.CsprojFile, referencedFlexReferences);
 
-            XmlFileHelper.SaveWithoutDeclaration(document, project.CsprojFile.FullName);
+            document.SaveWithoutDeclaration(project.CsprojFile.FullName);
             Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedFlexReferences.Count} flex reference(s))");
         }
 

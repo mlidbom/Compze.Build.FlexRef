@@ -101,6 +101,6 @@ class FlexRefConfigurationFile
         }
 
         var document = new XDocument(rootElement);
-        XmlFileHelper.SaveWithoutDeclaration(document, ConfigFilePath);
+        document.SaveWithoutDeclaration(ConfigFilePath);
     }
 }

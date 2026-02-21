@@ -39,7 +39,7 @@ partial class SlnxSolution
             var document = new XDocument(
                 new XElement("SolutionConfiguration", settingsElement));
 
-            XmlFileHelper.SaveWithoutDeclaration(document, filePath);
+            document.SaveWithoutDeclaration(filePath);
             Console.WriteLine($"  Created: {filePath} ({absentPackages.Count} absent package(s))");
         }
 
@@ -85,7 +85,7 @@ partial class SlnxSolution
             if(customBuildProperties != null && !customBuildProperties.HasElements)
                 customBuildProperties.Remove();
 
-            XmlFileHelper.SaveWithoutDeclaration(document, filePath);
+            document.SaveWithoutDeclaration(filePath);
             Console.WriteLine($"  Updated: {filePath} ({absentPackages.Count} absent package(s))");
         }
     }

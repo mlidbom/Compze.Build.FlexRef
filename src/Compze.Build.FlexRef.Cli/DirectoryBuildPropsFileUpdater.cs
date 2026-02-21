@@ -40,7 +40,7 @@ class DirectoryBuildPropsFileUpdater
         AddFlexRefImport();
         AddUsePackageReferenceProperties();
 
-        XmlFileHelper.SaveWithoutDeclaration(_document, _filePath);
+        _document.SaveWithoutDeclaration(_filePath);
         Console.WriteLine($"  Updated: {_filePath}");
     }
 
