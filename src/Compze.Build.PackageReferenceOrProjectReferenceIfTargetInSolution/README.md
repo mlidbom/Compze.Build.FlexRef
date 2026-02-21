@@ -6,8 +6,8 @@ Solution-aware MSBuild reference resolution for .NET projects.
 
 When a .NET solution contains many projects that are also published as NuGet packages, you face a choice:
 
-- **ProjectReference** — great for development (source debugging, instant refactoring across all projects), but requires all projects in the solution.
-- **PackageReference** — works with any subset of projects, but you lose all the above advantages.
+- **ProjectReference** — good for cross cutting development and refactoring across all projects, but requires all projects in the solution and builds are slow.
+- **PackageReference** — works with any subset of projects with out building them, but you lose the above advantages.
 
 ### Our Solution
 
@@ -30,11 +30,11 @@ At build time, projects present in the current `.slnx` are referenced as **Proje
 
 Confirmed to work with:
 
-- Visual Studio 2022 and 2026
+- Visual Studio 2026
 - JetBrains Rider
 - VS Code (C# Dev Kit)
 - `dotnet build` / `dotnet restore` CLI
-- NCrunch (including grid nodes)
+- NCrunch (including grid nodes) 
 
 ---
 
@@ -91,7 +91,7 @@ References **must** be in the `.csproj` file itself (not in imported files) and 
 
 ### 3. Configure NCrunch (if applicable)
 
-NCrunch cannot evaluate the auto-detection, so it needs explicit flags in `.v3.ncrunchsolution` files for consumer-only solutions:
+NCrunch does not work with the auto-detection, so it needs explicit flags in `.v3.ncrunchsolution` files for consumer-only solutions:
 
 ```xml
 <SolutionConfiguration>
@@ -126,4 +126,4 @@ dotnet build /p:UsePackageReference_Acme_Utilities=true
 
 ## License
 
-[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+[Unlicense](https://unlicense.org/)
