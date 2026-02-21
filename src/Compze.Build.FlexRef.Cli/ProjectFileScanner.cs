@@ -12,7 +12,7 @@ static class ProjectFileScanner
         try
         {
             return FindCsprojFilesRecursively(rootDirectory)
-                .Select(csprojFile => ParseSingleCsproj(csprojFile, projectCollection))
+                .Select(csprojFile => ParseCsproj(csprojFile, projectCollection))
                 .OfType<DiscoveredProject>()
                 .ToList();
         }
@@ -37,7 +37,7 @@ static class ProjectFileScanner
         }
     }
 
-    static DiscoveredProject? ParseSingleCsproj(FileInfo csprojFile, ProjectCollection projectCollection)
+    static DiscoveredProject? ParseCsproj(FileInfo csprojFile, ProjectCollection projectCollection)
     {
         try
         {
