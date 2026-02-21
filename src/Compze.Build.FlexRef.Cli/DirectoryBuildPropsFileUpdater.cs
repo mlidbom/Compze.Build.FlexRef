@@ -6,7 +6,7 @@ static class DirectoryBuildPropsFileUpdater
 {
     const string FileName = "Directory.Build.props";
 
-    public static void UpdateOrCreate(DirectoryInfo rootDirectory, List<FlexReference> switchablePackages)
+    public static void UpdateOrCreate(DirectoryInfo rootDirectory, List<FlexReference> flexReferences)
     {
         var filePath = Path.Combine(rootDirectory.FullName, FileName);
         XDocument document;
@@ -28,7 +28,7 @@ static class DirectoryBuildPropsFileUpdater
         RemoveExistingUsePackageReferenceProperties(rootElement);
 
         AddFlexRefImport(rootElement);
-        AddUsePackageReferenceProperties(rootElement, switchablePackages);
+        AddUsePackageReferenceProperties(rootElement, flexReferences);
 
         XmlFileHelper.SaveWithoutDeclaration(document, filePath);
         Console.WriteLine($"  Updated: {filePath}");
@@ -68,11 +68,11 @@ static class DirectoryBuildPropsFileUpdater
             new XElement("Import", new XAttribute("Project", importPath)));
     }
 
-    static void AddUsePackageReferenceProperties(XElement rootElement, List<FlexReference> switchablePackages)
+    static void AddUsePackageReferenceProperties(XElement rootElement, List<FlexReference> flexReferences)
     {
-        if (switchablePackages.Count == 0) return;
+        if (flexReferences.Count == 0) return;
 
-        var sortedPackages = switchablePackages
+        var sortedPackages = flexReferences
             .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

@@ -4,9 +4,9 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class NCrunchSolutionFileUpdater
 {
-    public static void UpdateOrCreate(SlnxSolutionInfo solution, List<FlexReference> switchablePackages)
+    public static void UpdateOrCreate(SlnxSolutionInfo solution, List<FlexReference> flexReferences)
     {
-        var absentPackages = switchablePackages
+        var absentPackages = flexReferences
             .Where(package => !solution.ProjectFileNames
                 .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)

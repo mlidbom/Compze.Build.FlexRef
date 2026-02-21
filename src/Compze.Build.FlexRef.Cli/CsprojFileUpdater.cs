@@ -4,30 +4,30 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class CsprojFileUpdater
 {
-    public static void UpdateIfNeeded(DiscoveredProject project, List<FlexReference> switchablePackages)
+    public static void UpdateIfNeeded(DiscoveredProject project, List<FlexReference> flexReferences)
     {
-        var referencedSwitchablePackages = DetermineReferencedSwitchablePackages(project, switchablePackages);
+        var referencedFlexReferences = DetermineReferencedFlexReferences(project, flexReferences);
 
-        if (referencedSwitchablePackages.Count == 0)
+        if (referencedFlexReferences.Count == 0)
             return;
 
         var document = XDocument.Load(project.CsprojFile.FullName);
         var rootElement = document.Root!;
 
-        RemoveExistingSwitchableReferences(rootElement, switchablePackages);
-        AppendSwitchableReferencePairs(rootElement, project.CsprojFile, referencedSwitchablePackages);
+        RemoveExistingFlexReferences(rootElement, flexReferences);
+        AppendFlexReferencePairs(rootElement, project.CsprojFile, referencedFlexReferences);
 
         XmlFileHelper.SaveWithoutDeclaration(document, project.CsprojFile.FullName);
-        Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedSwitchablePackages.Count} switchable reference(s))");
+        Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedFlexReferences.Count} flex reference(s))");
     }
 
-    static List<FlexReference> DetermineReferencedSwitchablePackages(
+    static List<FlexReference> DetermineReferencedFlexReferences(
         DiscoveredProject project,
-        List<FlexReference> switchablePackages)
+        List<FlexReference> flexReferences)
     {
         var result = new List<FlexReference>();
 
-        foreach (var package in switchablePackages)
+        foreach (var package in flexReferences)
         {
             if (project.CsprojFile.FullName.Equals(package.CsprojFile.FullName, StringComparison.OrdinalIgnoreCase))
                 continue;
@@ -45,25 +45,25 @@ static class CsprojFileUpdater
         return result.OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    static void RemoveExistingSwitchableReferences(XElement rootElement, List<FlexReference> switchablePackages)
+    static void RemoveExistingFlexReferences(XElement rootElement, List<FlexReference> flexReferences)
     {
-        // First pass: remove entire ItemGroups conditioned on UsePackageReference_* for switchable packages
+        // First pass: remove entire ItemGroups conditioned on UsePackageReference_* for flex references
         var conditionalItemGroups = rootElement.Elements("ItemGroup")
             .Where(itemGroup =>
             {
                 var condition = itemGroup.Attribute("Condition")?.Value ?? "";
-                return switchablePackages.Any(package => condition.Contains(package.PropertyName));
+                return flexReferences.Any(package => condition.Contains(package.PropertyName));
             })
             .ToList();
 
         foreach (var itemGroup in conditionalItemGroups)
             RemoveElementAndPrecedingComment(itemGroup);
 
-        // Second pass: remove individual switchable references from remaining (unconditional) ItemGroups
+        // Second pass: remove individual flex references from remaining (unconditional) ItemGroups
         foreach (var itemGroup in rootElement.Elements("ItemGroup").ToList())
         {
             var referencesToRemove = itemGroup.Elements()
-                .Where(element => IsReferenceToSwitchablePackage(element, switchablePackages))
+                .Where(element => IsFlexReference(element, flexReferences))
                 .ToList();
 
             foreach (var reference in referencesToRemove)
@@ -74,13 +74,13 @@ static class CsprojFileUpdater
         }
     }
 
-    static bool IsReferenceToSwitchablePackage(XElement element, List<FlexReference> switchablePackages)
+    static bool IsFlexReference(XElement element, List<FlexReference> flexReferences)
     {
         if (element.Name.LocalName == "PackageReference")
         {
             var includeName = element.Attribute("Include")?.Value;
             return includeName != null &&
-                switchablePackages.Any(package =>
+                flexReferences.Any(package =>
                     package.PackageId.Equals(includeName, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -89,14 +89,14 @@ static class CsprojFileUpdater
             var includePath = element.Attribute("Include")?.Value;
             if (includePath == null) return false;
             var fileName = Path.GetFileName(includePath);
-            return switchablePackages.Any(package =>
+            return flexReferences.Any(package =>
                 package.CsprojFile.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
         }
 
         return false;
     }
 
-    static void AppendSwitchableReferencePairs(
+    static void AppendFlexReferencePairs(
         XElement rootElement,
         FileInfo consumingCsprojFile,
         List<FlexReference> referencedPackages)
@@ -107,7 +107,7 @@ static class CsprojFileUpdater
                 consumingCsprojFile.FullName, package.CsprojFile.FullName);
 
             rootElement.Add(
-                new XComment($" {package.PackageId} — switchable reference "),
+                new XComment($" {package.PackageId} — flex reference "),
                 new XElement("ItemGroup",
                     new XAttribute("Condition", $"'$({package.PropertyName})' == 'true'"),
                     new XElement("PackageReference",

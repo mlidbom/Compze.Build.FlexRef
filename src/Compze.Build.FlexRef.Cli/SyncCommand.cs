@@ -20,9 +20,9 @@ static class SyncCommand
         Console.WriteLine("Scanning projects...");
         var allProjects = ProjectFileScanner.ScanAllProjects(rootDirectory);
 
-        var switchablePackages = ResolveSwitchablePackages(configFile, allProjects);
-        Console.WriteLine($"  Resolved {switchablePackages.Count} switchable package(s):");
-        foreach (var package in switchablePackages)
+        var flexReferences = ResolveFlexReferences(configFile, allProjects);
+        Console.WriteLine($"  Resolved {flexReferences.Count} flex reference(s):");
+        foreach (var package in flexReferences)
             Console.WriteLine($"    - {package.PackageId} ({package.CsprojFile.Name})");
 
         Console.WriteLine();
@@ -31,25 +31,25 @@ static class SyncCommand
 
         Console.WriteLine();
         Console.WriteLine("Updating Directory.Build.props...");
-        DirectoryBuildPropsFileUpdater.UpdateOrCreate(rootDirectory, switchablePackages);
+        DirectoryBuildPropsFileUpdater.UpdateOrCreate(rootDirectory, flexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Updating .csproj files...");
         foreach (var project in allProjects)
-            CsprojFileUpdater.UpdateIfNeeded(project, switchablePackages);
+            CsprojFileUpdater.UpdateIfNeeded(project, flexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Updating NCrunch solution files...");
         var solutions = SlnxFileParser.FindAndParseAllSolutions(rootDirectory);
         foreach (var solution in solutions)
-            NCrunchSolutionFileUpdater.UpdateOrCreate(solution, switchablePackages);
+            NCrunchSolutionFileUpdater.UpdateOrCreate(solution, flexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Sync complete.");
         return 0;
     }
 
-    static List<FlexReference> ResolveSwitchablePackages(
+    static List<FlexReference> ResolveFlexReferences(
         FlexRefConfigurationFile configuration,
         List<DiscoveredProject> allProjects)
     {
