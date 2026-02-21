@@ -42,12 +42,14 @@ jobs:
         run: echo "$RELEASE_NOTES" > RELEASE_NOTES.md
 
       - name: Pack
+        env:
+          RELEASE_NOTES: ${{ steps.changelog.outputs.changes }}
         run: |
           dotnet pack \
             src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj \
             --configuration Release \
             --output ./artifacts \
-            -p:PackageReleaseNotes="$(cat RELEASE_NOTES.md)"
+            -p:PackageReleaseNotes="$RELEASE_NOTES"
 
       - name: Push to NuGet.org
         run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
