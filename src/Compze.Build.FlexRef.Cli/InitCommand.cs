@@ -2,9 +2,9 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class InitCommand
 {
-    public static int Execute(string rootDirectory)
+    public static int Execute(DirectoryInfo rootDirectory)
     {
-        Console.WriteLine($"Initializing FlexRef in: {rootDirectory}");
+        Console.WriteLine($"Initializing FlexRef in: {rootDirectory.FullName}");
 
         if (FlexRefConfigurationFile.ExistsIn(rootDirectory))
         {

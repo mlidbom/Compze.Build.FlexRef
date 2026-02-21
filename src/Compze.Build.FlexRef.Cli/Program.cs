@@ -8,11 +8,12 @@ static class Program
             return PrintUsageAndReturnError();
 
         var command = args[0].ToLowerInvariant();
-        var rootDirectory = args.Length > 1 ? Path.GetFullPath(args[1]) : Directory.GetCurrentDirectory();
+        var rootDirectoryPath = args.Length > 1 ? Path.GetFullPath(args[1]) : Directory.GetCurrentDirectory();
+        var rootDirectory = new DirectoryInfo(rootDirectoryPath);
 
-        if (!Directory.Exists(rootDirectory))
+        if (!rootDirectory.Exists)
         {
-            Console.Error.WriteLine($"Error: Directory not found: {rootDirectory}");
+            Console.Error.WriteLine($"Error: Directory not found: {rootDirectory.FullName}");
             return 1;
         }
 

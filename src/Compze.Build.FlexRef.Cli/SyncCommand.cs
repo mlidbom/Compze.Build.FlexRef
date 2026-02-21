@@ -2,9 +2,9 @@ namespace Compze.Build.FlexRef.Cli;
 
 static class SyncCommand
 {
-    public static int Execute(string rootDirectory)
+    public static int Execute(DirectoryInfo rootDirectory)
     {
-        Console.WriteLine($"Syncing FlexRef in: {rootDirectory}");
+        Console.WriteLine($"Syncing FlexRef in: {rootDirectory.FullName}");
 
         if (!FlexRefConfigurationFile.ExistsIn(rootDirectory))
         {

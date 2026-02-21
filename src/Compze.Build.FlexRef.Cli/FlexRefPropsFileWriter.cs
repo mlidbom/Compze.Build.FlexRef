@@ -7,13 +7,13 @@ static class FlexRefPropsFileWriter
     const string BuildDirectoryName = "build";
     const string PropsFileName = "FlexRef.props";
 
-    public static string GetPropsFilePath(string rootDirectory) =>
-        Path.Combine(rootDirectory, BuildDirectoryName, PropsFileName);
+    public static string GetPropsFilePath(DirectoryInfo rootDirectory) =>
+        Path.Combine(rootDirectory.FullName, BuildDirectoryName, PropsFileName);
 
     public static string GetMsBuildImportProjectValue() =>
         $"$(MSBuildThisFileDirectory){BuildDirectoryName}\\{PropsFileName}";
 
-    public static void WriteToDirectory(string rootDirectory)
+    public static void WriteToDirectory(DirectoryInfo rootDirectory)
     {
         var targetPath = GetPropsFilePath(rootDirectory);
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);

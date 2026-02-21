@@ -6,9 +6,9 @@ static class DirectoryBuildPropsFileUpdater
 {
     const string FileName = "Directory.Build.props";
 
-    public static void UpdateOrCreate(string rootDirectory, List<SwitchablePackageInfo> switchablePackages)
+    public static void UpdateOrCreate(DirectoryInfo rootDirectory, List<SwitchablePackageInfo> switchablePackages)
     {
-        var filePath = Path.Combine(rootDirectory, FileName);
+        var filePath = Path.Combine(rootDirectory.FullName, FileName);
         XDocument document;
         XElement rootElement;
 

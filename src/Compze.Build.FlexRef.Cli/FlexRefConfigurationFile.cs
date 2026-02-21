@@ -10,13 +10,13 @@ class FlexRefConfigurationFile
 
     const string ConfigFileName = "FlexRef.config.xml";
 
-    public static string GetConfigFilePath(string rootDirectory) =>
-        Path.Combine(rootDirectory, ConfigFileName);
+    public static string GetConfigFilePath(DirectoryInfo rootDirectory) =>
+        Path.Combine(rootDirectory.FullName, ConfigFileName);
 
-    public static bool ExistsIn(string rootDirectory) =>
+    public static bool ExistsIn(DirectoryInfo rootDirectory) =>
         File.Exists(GetConfigFilePath(rootDirectory));
 
-    public static FlexRefConfigurationFile LoadFrom(string rootDirectory)
+    public static FlexRefConfigurationFile LoadFrom(DirectoryInfo rootDirectory)
     {
         var configFilePath = GetConfigFilePath(rootDirectory);
         var document = XDocument.Load(configFilePath);
@@ -47,7 +47,7 @@ class FlexRefConfigurationFile
         };
     }
 
-    public static void CreateDefaultConfigFile(string rootDirectory, List<string> discoveredPackageIds)
+    public static void CreateDefaultConfigFile(DirectoryInfo rootDirectory, List<string> discoveredPackageIds)
     {
         var sortedPackageIds = discoveredPackageIds
             .OrderBy(id => id, StringComparer.OrdinalIgnoreCase)

@@ -10,10 +10,10 @@ static class SlnxFileParser
 {
     static readonly string[] DirectoriesToSkip = ["bin", "obj", "node_modules", ".git", ".vs", ".idea"];
 
-    public static List<SlnxSolutionInfo> FindAndParseAllSolutions(string rootDirectory)
+    public static List<SlnxSolutionInfo> FindAndParseAllSolutions(DirectoryInfo rootDirectory)
     {
         var solutions = new List<SlnxSolutionInfo>();
-        foreach (var slnxPath in FindSlnxFilesRecursively(rootDirectory))
+        foreach (var slnxPath in FindSlnxFilesRecursively(rootDirectory.FullName))
         {
             var solution = ParseSingleSlnx(slnxPath);
             if (solution != null)
