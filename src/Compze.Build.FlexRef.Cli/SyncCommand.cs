@@ -15,12 +15,12 @@ static class SyncCommand
             return 1;
         }
 
-        var configuration = configFile.Load();
+        configFile.Load();
 
         Console.WriteLine("Scanning projects...");
         var allProjects = ProjectFileScanner.ScanAllProjects(rootDirectory);
 
-        var switchablePackages = ResolveSwitchablePackages(configuration, allProjects);
+        var switchablePackages = ResolveSwitchablePackages(configFile, allProjects);
         Console.WriteLine($"  Resolved {switchablePackages.Count} switchable package(s):");
         foreach (var package in switchablePackages)
             Console.WriteLine($"    - {package.PackageId} ({package.CsprojFileName})");

@@ -8,9 +8,9 @@ class FlexRefConfigurationFile
 
     public DirectoryInfo RootDirectory { get; }
     public string ConfigFilePath { get; }
-    public bool UseAutoDiscover { get; private init; }
-    public List<string> AutoDiscoverExclusions { get; private init; } = [];
-    public List<string> ExplicitPackageNames { get; private init; } = [];
+    public bool UseAutoDiscover { get; private set; }
+    public List<string> AutoDiscoverExclusions { get; private set; } = [];
+    public List<string> ExplicitPackageNames { get; private set; } = [];
 
     public FlexRefConfigurationFile(DirectoryInfo rootDirectory)
     {
@@ -20,7 +20,7 @@ class FlexRefConfigurationFile
 
     public bool Exists() => File.Exists(ConfigFilePath);
 
-    public FlexRefConfigurationFile Load()
+    public void Load()
     {
         var document = XDocument.Load(ConfigFilePath);
         var rootElement = document.Root
@@ -28,26 +28,21 @@ class FlexRefConfigurationFile
 
         var autoDiscoverElement = rootElement.Element("AutoDiscover");
 
-        var autoDiscoverExclusions = autoDiscoverElement?
+        UseAutoDiscover = autoDiscoverElement != null;
+
+        AutoDiscoverExclusions = autoDiscoverElement?
             .Elements("Exclude")
             .Select(element => element.Attribute("Name")?.Value)
             .Where(name => name != null)
             .Select(name => name!)
             .ToList() ?? [];
 
-        var explicitPackageNames = rootElement
+        ExplicitPackageNames = rootElement
             .Elements("Package")
             .Select(element => element.Attribute("Name")?.Value)
             .Where(name => name != null)
             .Select(name => name!)
             .ToList();
-
-        return new FlexRefConfigurationFile(RootDirectory)
-        {
-            UseAutoDiscover = autoDiscoverElement != null,
-            AutoDiscoverExclusions = autoDiscoverExclusions,
-            ExplicitPackageNames = explicitPackageNames,
-        };
     }
 
     public void CreateDefaultConfigFile(List<string> discoveredPackageIds)
