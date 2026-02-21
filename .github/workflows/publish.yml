@@ -1,8 +1,8 @@
 name: Publish to NuGet
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
 
 jobs:
   build-and-test:
@@ -11,26 +11,34 @@ jobs:
   publish:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Validate tag matches .csproj version
+      - name: Extract changelog for this version
+        id: changelog
         run: |
-          TAG_VERSION="${{ github.event.release.tag_name }}"
-          TAG_VERSION="${TAG_VERSION#v}"
-          CSPROJ_VERSION=$(grep -oP '<Version>\K[^<]+' src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj)
-          if [ "$TAG_VERSION" != "$CSPROJ_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match .csproj version ($CSPROJ_VERSION). Update the .csproj and try again."
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          # Extract the section between this version's header and the next version header
+          NOTES=$(sed -n "/^## \[$VERSION\]/,/^## \[/{/^## \[$VERSION\]/d;/^## \[/d;p}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "::error::No changelog entry found for version $VERSION in CHANGELOG.md"
             exit 1
           fi
-          echo "Version validated: $CSPROJ_VERSION"
+          # Write to file for gh release create
+          echo "$NOTES" > RELEASE_NOTES.md
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Pack release package
+      - name: Pack
         run: >
           dotnet pack
           src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj
@@ -39,6 +47,11 @@ jobs:
 
       - name: Push to NuGet.org
         run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Create GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" ./artifacts/*.nupkg --title "${{ steps.changelog.outputs.version }}" --notes-file RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload NuGet package artifact
         uses: actions/upload-artifact@v4

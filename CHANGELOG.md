@@ -1,0 +1,19 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/).
+
+## [Unreleased]
+
+## [0.2.0-alpha.1] - 2026-02-21
+
+### Added
+- Initial public release
+- Solution-aware `.slnx` parsing — auto-detects which projects are in the current solution
+- Conditional `PackageReference` / `ProjectReference` switching based on solution membership
+- NCrunch compatibility via `CustomBuildProperties` flags
+- CLI / CI override support via `/p:` properties or environment variables
+- Example workspace with `Acme.Full.slnx` and `Acme.AppOnly.slnx` demonstrating both modes
+- NuGet content package distributing the `.props` file
+- GitHub Actions CI and publish workflows

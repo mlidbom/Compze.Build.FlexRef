@@ -9,7 +9,6 @@
 
     <!-- Package metadata -->
     <PackageId>Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution</PackageId>
-    <Version>0.2.0-alpha.1</Version>
     <Description>Solution-aware MSBuild reference resolution for .NET projects. Automatically switches between ProjectReference and PackageReference based on which projects are in the current .slnx solution.</Description>
     <Authors>MagnusLidbom</Authors>
     <Copyright>Copyright (c) Lidbom Solutions AB. All rights reserved.</Copyright>
@@ -25,7 +24,14 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- MinVer derives the package version from git tags (e.g. v0.2.0 → 0.2.0) -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="all" />
+  </ItemGroup>
 
   <ItemGroup>
     <!--
