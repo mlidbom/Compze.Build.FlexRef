@@ -9,9 +9,11 @@ class DirectoryBuildPropsFileUpdater
     readonly FileInfo _file;
     readonly XDocument _document;
     readonly XElement _rootElement;
+    readonly IReadOnlyList<FlexReference> _flexReferences;
 
-    DirectoryBuildPropsFileUpdater(DirectoryInfo rootDirectory)
+    DirectoryBuildPropsFileUpdater(DirectoryInfo rootDirectory, IReadOnlyList<FlexReference> flexReferences)
     {
+        _flexReferences = flexReferences;
         _file = new FileInfo(Path.Combine(rootDirectory.FullName, FileName));
 
         if(_file.Exists)
@@ -26,9 +28,9 @@ class DirectoryBuildPropsFileUpdater
         }
     }
 
-    public static void UpdateOrCreate(DirectoryInfo rootDirectory)
+    public static void UpdateOrCreate(DirectoryInfo rootDirectory, IReadOnlyList<FlexReference> flexReferences)
     {
-        var updater = new DirectoryBuildPropsFileUpdater(rootDirectory);
+        var updater = new DirectoryBuildPropsFileUpdater(rootDirectory, flexReferences);
         updater.Update();
     }
 
@@ -80,10 +82,9 @@ class DirectoryBuildPropsFileUpdater
 
     void AddUsePackageReferenceProperties()
     {
-        var flexReferences = ManagedProject.FlexReferences;
-        if(flexReferences.Count == 0) return;
+        if(_flexReferences.Count == 0) return;
 
-        var sortedPackages = flexReferences
+        var sortedPackages = _flexReferences
             .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

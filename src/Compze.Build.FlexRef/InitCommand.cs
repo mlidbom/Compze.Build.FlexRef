@@ -15,7 +15,9 @@ static class InitCommand
             return 1;
         }
 
-        configFile.CreateDefault();
+        Console.WriteLine("Scanning for packable projects...");
+        var allProjects = ManagedProject.ScanDirectory(rootDirectory);
+        configFile.CreateDefault(allProjects);
 
         FlexRefPropsFileWriter.WriteToDirectory(rootDirectory);
 

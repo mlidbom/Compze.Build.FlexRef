@@ -6,9 +6,9 @@ partial class ManagedProject
 {
     static class CsprojUpdater
     {
-        public static void UpdateIfNeeded(ManagedProject project)
+        public static void UpdateIfNeeded(ManagedProject project, IReadOnlyList<FlexReference> flexReferences)
         {
-            var referencedFlexReferences = project.FindFlexReferences();
+            var referencedFlexReferences = project.FindFlexReferences(flexReferences);
 
             if(referencedFlexReferences.Count == 0)
                 return;
@@ -16,20 +16,20 @@ partial class ManagedProject
             var document = XDocument.Load(project.CsprojFile.FullName);
             var rootElement = document.Root!;
 
-            RemoveExistingFlexReferences(rootElement);
+            RemoveExistingFlexReferences(rootElement, flexReferences);
             AppendFlexReferencePairs(rootElement, project.CsprojFile, referencedFlexReferences);
 
             document.SaveWithoutDeclaration(project.CsprojFile.FullName);
             Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedFlexReferences.Count} flex reference(s))");
         }
 
-        static void RemoveExistingFlexReferences(XElement rootElement)
+        static void RemoveExistingFlexReferences(XElement rootElement, IReadOnlyList<FlexReference> flexReferences)
         {
             var conditionalItemGroups = rootElement.Elements("ItemGroup")
                                                    .Where(itemGroup =>
                                                     {
                                                         var condition = itemGroup.Attribute("Condition")?.Value ?? "";
-                                                        return FlexReferences.Any(package => condition.Contains(package.PropertyName));
+                                                        return flexReferences.Any(package => condition.Contains(package.PropertyName));
                                                     })
                                                    .ToList();
 
@@ -39,7 +39,7 @@ partial class ManagedProject
             foreach(var itemGroup in rootElement.Elements("ItemGroup").ToList())
             {
                 var referencesToRemove = itemGroup.Elements()
-                                                  .Where(IsFlexReference)
+                                                  .Where(element => IsFlexReference(element, flexReferences))
                                                   .ToList();
 
                 foreach(var reference in referencesToRemove)
@@ -50,13 +50,13 @@ partial class ManagedProject
             }
         }
 
-        static bool IsFlexReference(XElement element)
+        static bool IsFlexReference(XElement element, IReadOnlyList<FlexReference> flexReferences)
         {
             if(element.Name.LocalName == "PackageReference")
             {
                 var includeName = element.Attribute("Include")?.Value;
                 return includeName != null &&
-                       FlexReferences.Any(package =>
+                       flexReferences.Any(package =>
                                               package.PackageId.EqualsIgnoreCase(includeName));
             }
 
@@ -65,7 +65,7 @@ partial class ManagedProject
                 var includePath = element.Attribute("Include")?.Value;
                 if(includePath == null) return false;
                 var fileName = Path.GetFileName(includePath);
-                return FlexReferences.Any(package =>
+                return flexReferences.Any(package =>
                                               package.CsprojFile.Name.EqualsIgnoreCase(fileName));
             }
 

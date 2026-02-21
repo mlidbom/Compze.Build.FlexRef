@@ -18,9 +18,9 @@ static class SyncCommand
         configFile.Load();
 
         Console.WriteLine("Scanning projects...");
-        var flexReferences = ManagedProject.ScanAndResolveFlexReferences(rootDirectory, configFile);
-        Console.WriteLine($"  Resolved {flexReferences.Count} flex reference(s):");
-        foreach(var package in flexReferences)
+        var workspace = FlexRefWorkspace.ScanAndResolve(rootDirectory, configFile);
+        Console.WriteLine($"  Resolved {workspace.FlexReferences.Count} flex reference(s):");
+        foreach(var package in workspace.FlexReferences)
             Console.WriteLine($"    - {package.PackageId} ({package.CsprojFile.Name})");
 
         Console.WriteLine();
@@ -29,18 +29,18 @@ static class SyncCommand
 
         Console.WriteLine();
         Console.WriteLine("Updating Directory.Build.props...");
-        DirectoryBuildPropsFileUpdater.UpdateOrCreate(rootDirectory);
+        DirectoryBuildPropsFileUpdater.UpdateOrCreate(rootDirectory, workspace.FlexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Updating .csproj files...");
-        foreach(var project in ManagedProject.AllProjects)
-            project.UpdateCsprojIfNeeded();
+        foreach(var project in workspace.AllProjects)
+            project.UpdateCsprojIfNeeded(workspace.FlexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Updating NCrunch solution files...");
         var solutions = SlnxSolution.FindAndParseAllSolutions(rootDirectory);
         foreach(var solution in solutions)
-            solution.UpdateNCrunchFileIfNeeded();
+            solution.UpdateNCrunchFileIfNeeded(workspace.FlexReferences);
 
         Console.WriteLine();
         Console.WriteLine("Sync complete.");

@@ -8,15 +8,6 @@ record PackageReferenceEntry(string PackageName, string Version);
 
 partial class ManagedProject
 {
-    static List<FlexReference>? _flexReferences;
-    static List<ManagedProject>? _allProjects;
-
-    public static IReadOnlyList<FlexReference> FlexReferences =>
-        _flexReferences ?? throw new InvalidOperationException($"Call {nameof(ScanAndResolveFlexReferences)} first.");
-
-    public static IReadOnlyList<ManagedProject> AllProjects =>
-        _allProjects ?? throw new InvalidOperationException($"Call {nameof(ScanAllProjects)} or {nameof(ScanAndResolveFlexReferences)} first.");
-
     public FileInfo CsprojFile { get; }
     public string? PackageId { get; }
     public bool IsPackable { get; }
@@ -51,30 +42,20 @@ partial class ManagedProject
             .ToList();
     }
 
-    public static List<ManagedProject> ScanAllProjects(DirectoryInfo rootDirectory)
-    {
-        if(_allProjects != null)
-            throw new InvalidOperationException("Projects have already been scanned. Scanning may only be performed once.");
+    internal static List<ManagedProject> ScanDirectory(DirectoryInfo rootDirectory) =>
+        Scanner.ScanDirectory(rootDirectory);
 
-        _allProjects = Scanner.ScanDirectory(rootDirectory);
-        return _allProjects;
-    }
+    internal static List<FlexReference> ResolveFlexReferences(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects) =>
+        FlexReferenceResolver.Resolve(configuration, allProjects);
 
-    public static List<FlexReference> ScanAndResolveFlexReferences(DirectoryInfo rootDirectory, FlexRefConfigurationFile configuration)
-    {
-        var allProjects = ScanAllProjects(rootDirectory);
-        _flexReferences = FlexReferenceResolver.Resolve(configuration, allProjects);
-        return _flexReferences;
-    }
+    public void UpdateCsprojIfNeeded(IReadOnlyList<FlexReference> flexReferences) =>
+        CsprojUpdater.UpdateIfNeeded(this, flexReferences);
 
-    public void UpdateCsprojIfNeeded() =>
-        CsprojUpdater.UpdateIfNeeded(this);
-
-    public List<FlexReference> FindFlexReferences()
+    public List<FlexReference> FindFlexReferences(IReadOnlyList<FlexReference> flexReferences)
     {
         var result = new List<FlexReference>();
 
-        foreach(var package in FlexReferences)
+        foreach(var package in flexReferences)
         {
             if(CsprojFile.FullName.EqualsIgnoreCase(package.CsprojFile.FullName))
                 continue;
