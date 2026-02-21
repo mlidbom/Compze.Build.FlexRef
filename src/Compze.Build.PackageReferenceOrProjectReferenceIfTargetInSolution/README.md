@@ -11,32 +11,7 @@ When a .NET solution contains many projects that are also published as NuGet pac
 
 ### Our Solution
 
-Create focused solution files for different parts of your codebase:
-
-```
-MyFramework.everything.slnx         ← contains all projects
-MyFramework.top-level-concerns.slnx ← excludes utility projects to keep the solution small and fast
-MyFramework.Utilities.slnx          ← just utilities + their tests
-MyFramework.Samples.slnx            ← just samples (framework = NuGet packages)
-```
-
-At build time, projects present in the current `.slnx` are referenced as **ProjectReference**. Projects absent from the solution are automatically referenced as **PackageReference**.
-
-### Requirements
-
-- `.slnx` solution format (.NET 10+ default; migrate older solutions with `dotnet sln migrate`)
-
-### Compatibility
-
-Confirmed to work with:
-
-- Visual Studio 2026
-- JetBrains Rider
-- VS Code (C# Dev Kit)
-- `dotnet build` / `dotnet restore` CLI
-- NCrunch (including grid nodes) 
-
----
+Leverage MSBuild to make your references become project references if the referenced project is in the solution, and package references if not.
 
 ## Installation
 
@@ -50,11 +25,8 @@ Confirmed to work with:
 </Project>
 ```
 
-> **Why a file copy instead of a NuGet auto-import?** This tool must participate in NuGet restore's project graph evaluation. NuGet package imports aren't available until after restore completes.
-
 ---
-
-## Usage
+## Workspace setup
 
 ### 1. Declare switchable dependencies in `Directory.Build.props`
 
@@ -87,42 +59,28 @@ Property name convention: `UsePackageReference_{PackageName_with_dots_replaced_b
 </ItemGroup>
 ```
 
-References **must** be in the `.csproj` file itself (not in imported files) and use conditional `<ItemGroup>` (not conditional attributes on individual items).
+## Compatibility
 
-### 3. Configure NCrunch (if applicable)
 
-NCrunch does not work with the auto-detection, so it needs explicit flags in `.v3.ncrunchsolution` files for consumer-only solutions:
+### Confirmed to work with:
 
-```xml
-<SolutionConfiguration>
-  <Settings>
-    <CustomBuildProperties>
-      <Value>UsePackageReference_Acme_Utilities = true</Value>
-      <Value>UsePackageReference_Acme_Core = true</Value>
-    </CustomBuildProperties>
-  </Settings>
-</SolutionConfiguration>
-```
+- Visual Studio 2026
+- JetBrains Rider
+- VS Code (C# Dev Kit and/or Resharper)
+- `dotnet build` / `dotnet restore` CLI
 
-Full solutions (all projects included) need no configuration.
+### NCrunch  Workaround
 
----
+We have been unable to get automatic detection working with ncrunch.
+Our workaround is to set the required build properties in the ncrunch solution configuration.\
+That is: `UsePackageReference_Acme_Utilities = true` etc in My.slnx.v3.ncrunchsolution
+
 
 ## CLI / CI Overrides
 
 ```shell
 dotnet build /p:UsePackageReference_Acme_Utilities=true
 ```
-
----
-
-## Troubleshooting
-
-- **NCrunch shows stale test results** — Check that `CustomBuildProperties` in your `.v3.ncrunchsolution` matches which libraries are/aren't in the solution.
-- **Build error: project file not found** — The sibling project isn't checked out, or you're building without a solution context (default is ProjectReference). Build via the `.slnx` instead.
-- **VS IntelliSense shows wrong references** — Close and reopen the solution, or run a manual NuGet restore.
-
----
 
 ## License
 
