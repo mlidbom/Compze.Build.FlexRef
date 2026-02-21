@@ -29,9 +29,3 @@ jobs:
 
       - name: Test example — AppOnly solution (PackageReferences for absent projects)
         run: dotnet test example/Acme.AppOnly.slnx
-
-      - name: Upload NuGet package artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuget-package
-          path: ./artifacts/*.nupkg
