@@ -9,24 +9,23 @@ static class ProjectFileScanner
     public static List<DiscoveredProject> ScanAllProjects(DirectoryInfo rootDirectory)
     {
         var projects = new List<DiscoveredProject>();
-        foreach (var csprojPath in FindCsprojFilesRecursively(rootDirectory.FullName))
+        foreach (var csprojFile in FindCsprojFilesRecursively(rootDirectory))
         {
-            var project = ParseSingleCsproj(csprojPath);
+            var project = ParseSingleCsproj(csprojFile);
             if (project != null)
                 projects.Add(project);
         }
         return projects;
     }
 
-    static IEnumerable<string> FindCsprojFilesRecursively(string directory)
+    static IEnumerable<FileInfo> FindCsprojFilesRecursively(DirectoryInfo directory)
     {
-        foreach (var file in Directory.GetFiles(directory, "*.csproj"))
+        foreach (var file in directory.GetFiles("*.csproj"))
             yield return file;
 
-        foreach (var subdirectory in Directory.GetDirectories(directory))
+        foreach (var subdirectory in directory.GetDirectories())
         {
-            var directoryName = Path.GetFileName(subdirectory);
-            if (DirectoriesToSkip.Contains(directoryName, StringComparer.OrdinalIgnoreCase))
+            if (DirectoriesToSkip.Contains(subdirectory.Name, StringComparer.OrdinalIgnoreCase))
                 continue;
 
             foreach (var file in FindCsprojFilesRecursively(subdirectory))
@@ -34,11 +33,11 @@ static class ProjectFileScanner
         }
     }
 
-    static DiscoveredProject? ParseSingleCsproj(string csprojPath)
+    static DiscoveredProject? ParseSingleCsproj(FileInfo csprojFile)
     {
         try
         {
-            var document = XDocument.Load(csprojPath);
+            var document = XDocument.Load(csprojFile.FullName);
             var rootElement = document.Root;
             if (rootElement == null) return null;
 
@@ -49,7 +48,7 @@ static class ProjectFileScanner
             var isPackable = !isExplicitlyNotPackable && (explicitPackageId != null || isExplicitlyPackable);
 
             var effectivePackageId = explicitPackageId
-                ?? (isPackable ? Path.GetFileNameWithoutExtension(csprojPath) : null);
+                ?? (isPackable ? Path.GetFileNameWithoutExtension(csprojFile.Name) : null);
 
             var projectReferences = rootElement.Descendants("ProjectReference")
                 .Select(element => element.Attribute("Include")?.Value)
@@ -66,8 +65,8 @@ static class ProjectFileScanner
                 .ToList();
 
             return new DiscoveredProject(
-                CsprojFullPath: Path.GetFullPath(csprojPath),
-                CsprojFileName: Path.GetFileName(csprojPath),
+                CsprojFullPath: csprojFile.FullName,
+                CsprojFileName: csprojFile.Name,
                 PackageId: effectivePackageId,
                 IsPackable: isPackable,
                 ProjectReferences: projectReferences,
@@ -75,7 +74,7 @@ static class ProjectFileScanner
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine($"Warning: Could not parse {csprojPath}: {exception.Message}");
+            Console.Error.WriteLine($"Warning: Could not parse {csprojFile.FullName}: {exception.Message}");
             return null;
         }
     }

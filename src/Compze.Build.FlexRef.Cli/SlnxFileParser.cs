@@ -13,24 +13,23 @@ static class SlnxFileParser
     public static List<SlnxSolutionInfo> FindAndParseAllSolutions(DirectoryInfo rootDirectory)
     {
         var solutions = new List<SlnxSolutionInfo>();
-        foreach (var slnxPath in FindSlnxFilesRecursively(rootDirectory.FullName))
+        foreach (var slnxFile in FindSlnxFilesRecursively(rootDirectory))
         {
-            var solution = ParseSingleSlnx(slnxPath);
+            var solution = ParseSingleSlnx(slnxFile);
             if (solution != null)
                 solutions.Add(solution);
         }
         return solutions;
     }
 
-    static IEnumerable<string> FindSlnxFilesRecursively(string directory)
+    static IEnumerable<FileInfo> FindSlnxFilesRecursively(DirectoryInfo directory)
     {
-        foreach (var file in Directory.GetFiles(directory, "*.slnx"))
+        foreach (var file in directory.GetFiles("*.slnx"))
             yield return file;
 
-        foreach (var subdirectory in Directory.GetDirectories(directory))
+        foreach (var subdirectory in directory.GetDirectories())
         {
-            var directoryName = Path.GetFileName(subdirectory);
-            if (DirectoriesToSkip.Contains(directoryName, StringComparer.OrdinalIgnoreCase))
+            if (DirectoriesToSkip.Contains(subdirectory.Name, StringComparer.OrdinalIgnoreCase))
                 continue;
 
             foreach (var file in FindSlnxFilesRecursively(subdirectory))
@@ -38,11 +37,11 @@ static class SlnxFileParser
         }
     }
 
-    static SlnxSolutionInfo? ParseSingleSlnx(string slnxPath)
+    static SlnxSolutionInfo? ParseSingleSlnx(FileInfo slnxFile)
     {
         try
         {
-            var document = XDocument.Load(slnxPath);
+            var document = XDocument.Load(slnxFile.FullName);
             var projectFileNames = document.Descendants("Project")
                 .Select(element => element.Attribute("Path")?.Value)
                 .Where(path => path != null)
@@ -50,12 +49,12 @@ static class SlnxFileParser
                 .ToList();
 
             return new SlnxSolutionInfo(
-                SlnxFullPath: Path.GetFullPath(slnxPath),
+                SlnxFullPath: slnxFile.FullName,
                 ProjectFileNames: projectFileNames);
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine($"Warning: Could not parse {slnxPath}: {exception.Message}");
+            Console.Error.WriteLine($"Warning: Could not parse {slnxFile.FullName}: {exception.Message}");
             return null;
         }
     }
