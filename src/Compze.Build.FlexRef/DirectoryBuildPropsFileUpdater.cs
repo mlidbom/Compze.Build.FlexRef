@@ -47,7 +47,7 @@ class DirectoryBuildPropsFileUpdater
     void RemoveExistingFlexRefImport()
     {
         var flexRefImports = _rootElement.Elements("Import")
-            .Where(element => element.Attribute("Project")?.Value?.Contains("FlexRef.props") == true)
+            .Where(element => element.Attribute("Project")?.Value.Contains("FlexRef.props") == true)
             .ToList();
 
         foreach(var importElement in flexRefImports)
