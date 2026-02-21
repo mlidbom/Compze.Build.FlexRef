@@ -38,9 +38,9 @@ static class SyncCommand
 
         Console.WriteLine();
         Console.WriteLine("Updating NCrunch solution files...");
-        var solutions = SlnxFileParser.FindAndParseAllSolutions(rootDirectory);
+        var solutions = SlnxSolution.FindAndParseAllSolutions(rootDirectory);
         foreach(var solution in solutions)
-            NCrunchSolutionFileUpdater.UpdateOrCreate(solution, flexReferences);
+            solution.UpdateNCrunchFileIfNeeded();
 
         Console.WriteLine();
         Console.WriteLine("Sync complete.");

@@ -1,0 +1,28 @@
+using System.Xml.Linq;
+
+namespace Compze.Build.FlexRef.Cli;
+
+partial class SlnxSolution
+{
+    public string SlnxFullPath { get; }
+    public List<string> ProjectFileNames { get; }
+
+    SlnxSolution(string slnxFullPath, List<string> projectFileNames)
+    {
+        SlnxFullPath = slnxFullPath;
+        ProjectFileNames = projectFileNames;
+    }
+
+    public static List<SlnxSolution> FindAndParseAllSolutions(DirectoryInfo rootDirectory) =>
+        Scanner.FindAndParseAll(rootDirectory);
+
+    public void UpdateNCrunchFileIfNeeded() =>
+        NCrunchUpdater.UpdateOrCreate(this);
+
+    public List<FlexReference> FindAbsentFlexReferences() =>
+        ManagedProject.FlexReferences
+            .Where(package => !ProjectFileNames
+                .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
+            .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+}
