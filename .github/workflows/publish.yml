@@ -39,7 +39,7 @@ jobs:
       - name: Pack
         run: |
           dotnet pack \
-            src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj \
+            src/Compze.Build.FlexRef/Compze.Build.FlexRef.csproj \
             --configuration Release \
             --output ./artifacts
 

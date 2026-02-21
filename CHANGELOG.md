@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0-alpha.3] - 2026-02-21
+
+### Changes
+- Renamed to Compze.Build.FlexRef
+
 ## [0.2.0-alpha.2] - 2026-02-21
 
 ### Added

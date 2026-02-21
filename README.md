@@ -1,4 +1,4 @@
-# PackageReferenceOrProjectReferenceIfTargetInSolution
+# Compze.Build.FlexRef
 
 Solution-aware MSBuild reference resolution for .NET projects.
 
@@ -17,13 +17,13 @@ Then you can set up any number of solutions to fit what you need at the moment.
 
 ## Installation
 
-1. Copy `PackageReferenceOrProjectReferenceIfTargetInSolution.props` into your repository (e.g. into a `build/` folder).
+1. Copy `FlexRef.props` into your repository (e.g. into a `build/` folder).
 
 2. Import it from your `Directory.Build.props` (create the file if it doesn't exist):
 
 ```xml
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)build\PackageReferenceOrProjectReferenceIfTargetInSolution.props" />
+  <Import Project="$(MSBuildThisFileDirectory)build\FlexRef.props" />
 </Project>
 ```
 

@@ -178,11 +178,11 @@ UsePackageReference_MyProj_LibB=true
 
 ### `Directory.Build.props` (repo root)
 
-Import `PackageReferenceOrProjectReferenceIfTargetInSolution.props` (which reads the `.slnx` and exposes `_SwitchRef_SolutionProjects` — a string where each project filename is wrapped in `|` delimiters), then declare one property per dependency:
+Import `FlexRef.props` (which reads the `.slnx` and exposes `_SwitchRef_SolutionProjects` — a string where each project filename is wrapped in `|` delimiters), then declare one property per dependency:
 
 ```xml
 <!-- Import shared infrastructure -->
-<Import Project="$(MSBuildThisFileDirectory)build\PackageReferenceOrProjectReferenceIfTargetInSolution.props" />
+<Import Project="$(MSBuildThisFileDirectory)build\FlexRef.props" />
 
 <!-- Auto-detect: set to 'true' if project is absent from the .slnx.
      If already set (NCrunch / env var / CLI), the existing value wins. -->
@@ -308,8 +308,8 @@ The recommended hybrid approach has been packaged as reusable tooling in the `bu
 
 | File | Purpose |
 |---|---|
-| `src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/PackageReferenceOrProjectReferenceIfTargetInSolution.props` | Shared MSBuild infrastructure — import once per repo |
-| `src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/README.md` | Usage guide (also displayed on NuGet.org) |
+| `src/Compze.Build.FlexRef/FlexRef.props` | Shared MSBuild infrastructure — import once per repo |
+| `README.md` | Usage guide (also displayed on NuGet.org) |
 | `build/examples/Directory.Build.props.example` | Example showing per-dependency flag declarations |
 | `build/examples/MyApp.csproj.example` | Example showing conditional ItemGroups in a project file |
 | `build/examples/ConsumerOnly.v3.ncrunchsolution.example` | Example NCrunch solution settings with overrides |
@@ -317,7 +317,7 @@ The recommended hybrid approach has been packaged as reusable tooling in the `bu
 
 The `example/` directory contains a fully functional three-project workspace (`Acme.Core` → `Acme.Utilities` → `Acme.App`) with two solutions (`Acme.Full.slnx` and `Acme.AppOnly.slnx`) that exercise both the ProjectReference and PackageReference paths, including NCrunch grid node support.
 
-See [src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/README.md](src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/README.md) for full instructions.
+See [README.md](README.md) for full instructions.
 
 ---
 

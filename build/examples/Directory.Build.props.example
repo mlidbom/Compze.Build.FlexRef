@@ -2,14 +2,14 @@
 
   <!--
     Example Directory.Build.props showing how to use
-    PackageReferenceOrProjectReferenceIfTargetInSolution.
+    FlexRef.
 
     This file goes at your repository root. Adjust the import path to
     wherever you placed the .props file.
   -->
 
   <!-- Import shared infrastructure (parses .slnx project list) -->
-  <Import Project="$(MSBuildThisFileDirectory)build\PackageReferenceOrProjectReferenceIfTargetInSolution.props" />
+  <Import Project="$(MSBuildThisFileDirectory)build\FlexRef.props" />
   <!-- Or wherever you placed the .props file from the NuGet package -->
 
   <!--

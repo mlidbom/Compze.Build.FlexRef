@@ -8,13 +8,13 @@
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
 
     <!-- Package metadata -->
-    <PackageId>Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution</PackageId>
+    <PackageId>Compze.Build.FlexRef</PackageId>
     <Description>Solution-aware MSBuild reference resolution for .NET projects. Automatically switches between ProjectReference and PackageReference based on which projects are in the current .slnx solution.</Description>
     <Authors>MagnusLidbom</Authors>
     <Copyright>Copyright (c) Lidbom Solutions AB. All rights reserved.</Copyright>
     <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/mlidbom/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mlidbom/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mlidbom/Compze.Build.FlexRef</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mlidbom/Compze.Build.FlexRef</RepositoryUrl>
     <PackageTags>msbuild;nuget;project-reference;package-reference;solution;build;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
@@ -39,7 +39,7 @@
       in the consumer's project directory. The consumer then copies it to their
       build/ folder and imports it from Directory.Build.props.
     -->
-    <Content Include="PackageReferenceOrProjectReferenceIfTargetInSolution.props"
+    <Content Include="FlexRef.props"
              Pack="true"
              PackagePath="contentFiles/any/any/" />
 

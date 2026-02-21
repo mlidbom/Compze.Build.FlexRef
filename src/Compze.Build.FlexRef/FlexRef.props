@@ -1,7 +1,7 @@
 <Project>
 
   <!--
-    PackageReferenceOrProjectReferenceIfTargetInSolution.props
+    FlexRef.props
 
     Shared MSBuild infrastructure for switching between ProjectReference
     and PackageReference based on solution context.
