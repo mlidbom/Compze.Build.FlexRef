@@ -11,14 +11,14 @@ static class CsprojFileUpdater
         if (referencedSwitchablePackages.Count == 0)
             return;
 
-        var document = XDocument.Load(project.CsprojFullPath);
+        var document = XDocument.Load(project.CsprojFile.FullName);
         var rootElement = document.Root!;
 
         RemoveExistingSwitchableReferences(rootElement, switchablePackages);
-        AppendSwitchableReferencePairs(rootElement, project.CsprojFullPath, referencedSwitchablePackages);
+        AppendSwitchableReferencePairs(rootElement, project.CsprojFile, referencedSwitchablePackages);
 
-        XmlFileHelper.SaveWithoutDeclaration(document, project.CsprojFullPath);
-        Console.WriteLine($"  Updated: {project.CsprojFullPath} ({referencedSwitchablePackages.Count} switchable reference(s))");
+        XmlFileHelper.SaveWithoutDeclaration(document, project.CsprojFile.FullName);
+        Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedSwitchablePackages.Count} switchable reference(s))");
     }
 
     static List<FlexReference> DetermineReferencedSwitchablePackages(
@@ -29,11 +29,11 @@ static class CsprojFileUpdater
 
         foreach (var package in switchablePackages)
         {
-            if (project.CsprojFullPath.Equals(package.CsprojFullPath, StringComparison.OrdinalIgnoreCase))
+            if (project.CsprojFile.FullName.Equals(package.CsprojFile.FullName, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             var hasMatchingProjectReference = project.ProjectReferences
-                .Any(reference => reference.ResolvedFileName.Equals(package.CsprojFileName, StringComparison.OrdinalIgnoreCase));
+                .Any(reference => reference.ResolvedFileName.Equals(package.CsprojFile.Name, StringComparison.OrdinalIgnoreCase));
 
             var hasMatchingPackageReference = project.PackageReferences
                 .Any(reference => reference.PackageName.Equals(package.PackageId, StringComparison.OrdinalIgnoreCase));
@@ -90,7 +90,7 @@ static class CsprojFileUpdater
             if (includePath == null) return false;
             var fileName = Path.GetFileName(includePath);
             return switchablePackages.Any(package =>
-                package.CsprojFileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+                package.CsprojFile.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
         }
 
         return false;
@@ -98,13 +98,13 @@ static class CsprojFileUpdater
 
     static void AppendSwitchableReferencePairs(
         XElement rootElement,
-        string consumingCsprojFullPath,
+        FileInfo consumingCsprojFile,
         List<FlexReference> referencedPackages)
     {
         foreach (var package in referencedPackages)
         {
             var relativeProjectPath = ComputeRelativePathWithBackslashes(
-                consumingCsprojFullPath, package.CsprojFullPath);
+                consumingCsprojFile.FullName, package.CsprojFile.FullName);
 
             rootElement.Add(
                 new XComment($" {package.PackageId} — switchable reference "),

@@ -83,7 +83,7 @@ static class DirectoryBuildPropsFileUpdater
             var conditionValue =
                 $"'$({package.PropertyName})' != 'true'"
                 + $" And '$(_SwitchRef_SolutionProjects)' != ''"
-                + $" And !$(_SwitchRef_SolutionProjects.Contains('|{package.CsprojFileName}|'))";
+                + $" And !$(_SwitchRef_SolutionProjects.Contains('|{package.CsprojFile.Name}|'))";
 
             propertyGroup.Add(
                 new XComment($" {package.PackageId} "),

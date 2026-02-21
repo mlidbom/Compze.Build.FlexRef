@@ -8,18 +8,11 @@ static class ProjectFileScanner
 
     public static List<DiscoveredProject> ScanAllProjects(DirectoryInfo rootDirectory)
     {
-        var projectCollection = new ProjectCollection();
-        try
-        {
-            return FindCsprojFilesRecursively(rootDirectory)
-                .Select(csprojFile => ParseCsproj(csprojFile, projectCollection))
-                .OfType<DiscoveredProject>()
-                .ToList();
-        }
-        finally
-        {
-            projectCollection.UnloadAllProjects();
-        }
+        using var projectCollection = new ProjectCollection();
+        return FindCsprojFilesRecursively(rootDirectory)
+            .Select(csprojFile => ParseCsproj(csprojFile, projectCollection))
+            .OfType<DiscoveredProject>()
+            .ToList();
     }
 
     static IEnumerable<FileInfo> FindCsprojFilesRecursively(DirectoryInfo directory)
@@ -41,36 +34,7 @@ static class ProjectFileScanner
     {
         try
         {
-            var msbuildProject = new Project(csprojFile.FullName, null, null, projectCollection);
-
-            var packageId = msbuildProject.GetNonEmptyPropertyOrNull("PackageId");
-            var isPackableValue = msbuildProject.GetNonEmptyPropertyOrNull("IsPackable");
-            var isExplicitlyNotPackable = string.Equals(isPackableValue, "false", StringComparison.OrdinalIgnoreCase);
-            var isExplicitlyPackable = string.Equals(isPackableValue, "true", StringComparison.OrdinalIgnoreCase);
-            var isPackable = !isExplicitlyNotPackable && (packageId != null || isExplicitlyPackable);
-
-            var effectivePackageId = packageId
-                ?? (isPackable ? Path.GetFileNameWithoutExtension(csprojFile.Name) : null);
-
-            var projectReferences = msbuildProject.GetItems("ProjectReference")
-                .Select(item => item.EvaluatedInclude)
-                .Where(includePath => !string.IsNullOrEmpty(includePath))
-                .Select(includePath => new DiscoveredProjectReference(includePath, Path.GetFileName(includePath)))
-                .ToList();
-
-            var packageReferences = msbuildProject.GetItems("PackageReference")
-                .Select(item => (Name: item.EvaluatedInclude, Version: item.GetMetadataValue("Version")))
-                .Where(pair => !string.IsNullOrEmpty(pair.Name))
-                .Select(pair => new DiscoveredPackageReference(pair.Name, pair.Version))
-                .ToList();
-
-            return new DiscoveredProject(
-                CsprojFullPath: csprojFile.FullName,
-                CsprojFileName: csprojFile.Name,
-                PackageId: effectivePackageId,
-                IsPackable: isPackable,
-                ProjectReferences: projectReferences,
-                PackageReferences: packageReferences);
+            return new DiscoveredProject(csprojFile, projectCollection);
         }
         catch (Exception exception)
         {

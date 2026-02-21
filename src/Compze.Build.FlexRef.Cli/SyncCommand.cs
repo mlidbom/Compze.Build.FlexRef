@@ -23,7 +23,7 @@ static class SyncCommand
         var switchablePackages = ResolveSwitchablePackages(configFile, allProjects);
         Console.WriteLine($"  Resolved {switchablePackages.Count} switchable package(s):");
         foreach (var package in switchablePackages)
-            Console.WriteLine($"    - {package.PackageId} ({package.CsprojFileName})");
+            Console.WriteLine($"    - {package.PackageId} ({package.CsprojFile.Name})");
 
         Console.WriteLine();
         Console.WriteLine("Writing FlexRef.props...");
@@ -69,8 +69,7 @@ static class SyncCommand
 
                 resolvedPackages.Add(new FlexReference(
                     PackageId: project.PackageId!,
-                    CsprojFileName: project.CsprojFileName,
-                    CsprojFullPath: project.CsprojFullPath));
+                    CsprojFile: project.CsprojFile));
             }
         }
 
@@ -88,8 +87,7 @@ static class SyncCommand
             {
                 resolvedPackages.Add(new FlexReference(
                     PackageId: matchingProject.PackageId!,
-                    CsprojFileName: matchingProject.CsprojFileName,
-                    CsprojFullPath: matchingProject.CsprojFullPath));
+                    CsprojFile: matchingProject.CsprojFile));
             }
             else
             {
@@ -101,10 +99,10 @@ static class SyncCommand
         foreach (var package in resolvedPackages)
         {
             var expectedFileName = package.PackageId + ".csproj";
-            if (!package.CsprojFileName.Equals(expectedFileName, StringComparison.OrdinalIgnoreCase))
+            if (!package.CsprojFile.Name.Equals(expectedFileName, StringComparison.OrdinalIgnoreCase))
             {
                 Console.Error.WriteLine(
-                    $"  Warning: Package '{package.PackageId}' is in project file '{package.CsprojFileName}' (expected '{expectedFileName}')");
+                    $"  Warning: Package '{package.PackageId}' is in project file '{package.CsprojFile.Name}' (expected '{expectedFileName}')");
             }
         }
 

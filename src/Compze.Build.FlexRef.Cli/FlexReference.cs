@@ -2,8 +2,7 @@ namespace Compze.Build.FlexRef.Cli;
 
 record FlexReference(
     string PackageId,
-    string CsprojFileName,
-    string CsprojFullPath)
+    FileInfo CsprojFile)
 {
     public string PropertyName { get; } = "UsePackageReference_" + PackageId.Replace('.', '_').Replace('-', '_');
 }

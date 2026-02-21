@@ -8,7 +8,7 @@ static class NCrunchSolutionFileUpdater
     {
         var absentPackages = switchablePackages
             .Where(package => !solution.ProjectFileNames
-                .Contains(package.CsprojFileName, StringComparer.OrdinalIgnoreCase))
+                .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

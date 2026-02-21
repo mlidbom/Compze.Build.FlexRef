@@ -70,11 +70,11 @@ class FlexRefConfigurationFile
         Console.WriteLine($"  Found {packableProjects.Count} packable project(s):");
         foreach (var project in packableProjects)
         {
-            Console.WriteLine($"    - {project.PackageId} ({project.CsprojFileName})");
+            Console.WriteLine($"    - {project.PackageId} ({project.CsprojFile.Name})");
 
             var expectedFileName = project.PackageId + ".csproj";
-            if (!project.CsprojFileName.Equals(expectedFileName, StringComparison.OrdinalIgnoreCase))
-                Console.Error.WriteLine($"      Warning: Package ID '{project.PackageId}' does not match file name '{project.CsprojFileName}'");
+            if (!project.CsprojFile.Name.Equals(expectedFileName, StringComparison.OrdinalIgnoreCase))
+                Console.Error.WriteLine($"      Warning: Package ID '{project.PackageId}' does not match file name '{project.CsprojFile.Name}'");
         }
 
         var packageIds = packableProjects.Select(project => project.PackageId!).ToList();
