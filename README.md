@@ -11,72 +11,83 @@ When a .NET solution contains many projects that are also published as NuGet pac
 
 ### Our Solution
 
-Leverage MSBuild to make your references become project references if the referenced project is in the solution, and package references if not.
+A dotnet tool that generates the MSBuild boilerplate to turn your references into flex references, which become project references if the referenced project is in the solution, and package references if not.
 
-Then you can set up any number of solutions to fit what you need at the moment.
+Then you can set up any number of `.slnx` solutions to fit what you need at the moment.
 
-## Installation
+## Quick Start
 
-1. Copy `FlexRef.props` into your repository (e.g. into a `build/` folder).
+Install the tool:
 
-2. Import it from your `Directory.Build.props` (create the file if it doesn't exist):
-
-```xml
-<Project>
-  <Import Project="$(MSBuildThisFileDirectory)build\FlexRef.props" />
-</Project>
+```shell
+dotnet tool install --global Compze.Build.FlexRef
 ```
 
----
-## Workspace setup
+Initialize in your repository root:
 
-### 1. Declare switchable dependencies in `Directory.Build.props`
-
-After the import, add one property per switchable dependency:
-
-```xml
-  <PropertyGroup>
-    <UsePackageReference_Acme_Utilities
-        Condition="'$(UsePackageReference_Acme_Utilities)' != 'true'
-                 And '$(_FlexRef_SolutionProjects)' != ''
-                 And !$(_FlexRef_SolutionProjects.Contains('|Acme.Utilities.csproj|'))">true</UsePackageReference_Acme_Utilities>
-
-    <UsePackageReference_Acme_Core
-        Condition="'$(UsePackageReference_Acme_Core)' != 'true'
-                 And '$(_FlexRef_SolutionProjects)' != ''
-                 And !$(_FlexRef_SolutionProjects.Contains('|Acme.Core.csproj|'))">true</UsePackageReference_Acme_Core>
-  </PropertyGroup>
+```shell
+flexref init
 ```
 
-Property name convention: `UsePackageReference_{PackageName_with_dots_replaced_by_underscores}`
+This scans for packable projects, creates `FlexRef.config.xml`, and writes `build/FlexRef.props`.
 
-### 2. Add conditional references in each `.csproj`
+Review the generated config, then sync:
+
+```shell
+flexref sync
+```
+
+This updates `Directory.Build.props`, all `.csproj` files with flex references, and NCrunch solution files.
+
+## What It Generates
+
+`flexref sync` manages the following files:
+
+- **`build/FlexRef.props`** — shared MSBuild infrastructure that reads the `.slnx` at build time to determine which projects are present.
+- **`Directory.Build.props`** — imports `FlexRef.props` and declares per-dependency detection properties.
+- **`.csproj` files** — conditional `PackageReference` / `ProjectReference` pairs for each flex reference.
+- **`.v3.ncrunchsolution` files** — NCrunch custom build properties makes this work in NCrunch.
+
+## Configuration
+
+`FlexRef.config.xml` controls which packages become flex references:
 
 ```xml
-<ItemGroup Condition="'$(UsePackageReference_Acme_Utilities)' == 'true'">
-  <PackageReference Include="Acme.Utilities" Version="3.1.0" />
-</ItemGroup>
-<ItemGroup Condition="'$(UsePackageReference_Acme_Utilities)' != 'true'">
-  <ProjectReference Include="..\Acme.Utilities\Acme.Utilities.csproj" />
-</ItemGroup>
+<FlexRef>
+  <AutoDiscover />
+</FlexRef>
+```
+
+`<AutoDiscover />` finds all packable projects automatically. To exclude specific packages:
+
+```xml
+<FlexRef>
+  <AutoDiscover>
+    <Exclude Name="Acme.Internal" />
+  </AutoDiscover>
+</FlexRef>
+```
+
+Or list packages explicitly instead:
+
+```xml
+<FlexRef>
+  <Package Name="Acme.Core" />
+  <Package Name="Acme.Utilities" />
+</FlexRef>
 ```
 
 ## Compatibility
 
-
 ### Confirmed to work with:
 
-- Visual Studio 2026
+- Visual Studio 2022+
 - JetBrains Rider
-- VS Code (C# Dev Kit and/or Resharper)
+- VS Code (C# Dev Kit and/or ReSharper)
 - `dotnet build` / `dotnet restore` CLI
+- NCrunch (via generated `.v3.ncrunchsolution` files)
 
-### NCrunch  Workaround
-
-We have been unable to get automatic detection working with ncrunch.
-Our workaround is to set the required build properties in the ncrunch solution configuration.\
-That is: `UsePackageReference_Acme_Utilities = true` etc in My.slnx.v3.ncrunchsolution
-
+**Note:** Only `.slnx` solution files are supported. Classic `.sln` files are not.
 
 ## CLI / CI Overrides
 
