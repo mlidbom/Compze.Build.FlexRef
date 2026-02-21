@@ -20,35 +20,6 @@ class FlexRefWorkspace
         return new FlexRefWorkspace(rootDirectory, allProjects, flexReferences);
     }
 
-    public List<FlexReference> FindFlexReferencesFor(ManagedProject project)
-    {
-        var result = new List<FlexReference>();
-
-        foreach(var flexReference in FlexReferences)
-        {
-            if(project.CsprojFile.FullName.EqualsIgnoreCase(flexReference.CsprojFile.FullName))
-                continue;
-
-            var hasMatchingProjectReference = project.ProjectReferences
-                                                     .Any(reference => reference.ResolvedFileName.EqualsIgnoreCase(flexReference.CsprojFile.Name));
-
-            var hasMatchingPackageReference = project.PackageReferences
-                                                     .Any(reference => reference.PackageName.EqualsIgnoreCase(flexReference.PackageId));
-
-            if(hasMatchingProjectReference || hasMatchingPackageReference)
-                result.Add(flexReference);
-        }
-
-        return result.OrderBy(flexReference => flexReference.PackageId, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    public List<FlexReference> FindAbsentFlexReferencesFor(SlnxSolution solution) =>
-        FlexReferences
-            .Where(package => !solution.ProjectFileNames
-                                       .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
-            .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
     public void UpdateDirectoryBuildProps() =>
         DirectoryBuildPropsFileUpdater.UpdateOrCreate(this);
 

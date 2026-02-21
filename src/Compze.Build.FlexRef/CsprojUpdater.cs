@@ -11,7 +11,7 @@ class CsprojUpdater
 
     public void UpdateIfNeeded(ManagedProject project)
     {
-        var referencedFlexReferences = _workspace.FindFlexReferencesFor(project);
+        var referencedFlexReferences = project.FindMatchingFlexReferences(_workspace.FlexReferences);
 
         if(referencedFlexReferences.Count == 0)
             return;
@@ -75,16 +75,11 @@ class CsprojUpdater
         return false;
     }
 
-    static void AppendFlexReferencePairs(
-        XElement rootElement,
-        FileInfo consumingCsprojFile,
-        List<FlexReference> referencedPackages)
+    static void AppendFlexReferencePairs(XElement rootElement, FileInfo consumingCsprojFile, List<FlexReference> referencedPackages)
     {
         foreach(var package in referencedPackages)
         {
-            var relativeProjectPath = ComputeRelativePathWithBackslashes(
-                consumingCsprojFile,
-                package.CsprojFile);
+            var relativeProjectPath = consumingCsprojFile.ComputeRelativePathWithBackslashes(package.CsprojFile);
 
             rootElement.Add(
                 new XComment($" {package.PackageId} — flex reference "),
@@ -98,12 +93,5 @@ class CsprojUpdater
                              new XElement("ProjectReference",
                                           new XAttribute("Include", relativeProjectPath))));
         }
-    }
-
-    static string ComputeRelativePathWithBackslashes(FileInfo fromCsproj, FileInfo toCsproj)
-    {
-        var fromDirectory = fromCsproj.DirectoryName!;
-        var relativePath = Path.GetRelativePath(fromDirectory, toCsproj.FullName);
-        return relativePath.Replace('/', '\\');
     }
 }

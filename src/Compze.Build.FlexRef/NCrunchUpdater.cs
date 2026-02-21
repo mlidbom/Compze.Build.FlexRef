@@ -11,7 +11,7 @@ class NCrunchUpdater
 
     public void UpdateOrCreate(SlnxSolution solution)
     {
-        var absentPackages = _workspace.FindAbsentFlexReferencesFor(solution);
+        var absentPackages = FindAbsentFlexReferencesFor(solution);
         var ncrunchFile = DeriveNCrunchFile(solution.SlnxFile);
 
         if(ncrunchFile.Exists)
@@ -90,4 +90,11 @@ class NCrunchUpdater
         document.SaveWithoutDeclaration(file.FullName);
         Console.WriteLine($"  Updated: {file.FullName} ({absentPackages.Count} absent package(s))");
     }
+
+    List<FlexReference> FindAbsentFlexReferencesFor(SlnxSolution solution) =>
+        _workspace.FlexReferences
+            .Where(package => !solution.ProjectFileNames
+                                       .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
+            .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 }

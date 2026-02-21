@@ -47,4 +47,26 @@ partial class ManagedProject
 
     internal static List<FlexReference> ResolveFlexReferences(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects) =>
         FlexReferenceResolver.Resolve(configuration, allProjects);
+
+    public List<FlexReference> FindMatchingFlexReferences(IReadOnlyList<FlexReference> flexReferences)
+    {
+        var result = new List<FlexReference>();
+
+        foreach(var flexReference in flexReferences)
+        {
+            if(CsprojFile.FullName.EqualsIgnoreCase(flexReference.CsprojFile.FullName))
+                continue;
+
+            var hasMatchingProjectReference = ProjectReferences
+                                                     .Any(reference => reference.ResolvedFileName.EqualsIgnoreCase(flexReference.CsprojFile.Name));
+
+            var hasMatchingPackageReference = PackageReferences
+                                                     .Any(reference => reference.PackageName.EqualsIgnoreCase(flexReference.PackageId));
+
+            if(hasMatchingProjectReference || hasMatchingPackageReference)
+                result.Add(flexReference);
+        }
+
+        return result.OrderBy(flexReference => flexReference.PackageId, StringComparer.OrdinalIgnoreCase).ToList();
+    }
 }
