@@ -10,9 +10,12 @@ on:
         required: false
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
 
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -21,38 +24,19 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Determine version
-        id: version
+      - name: Pack release package
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "version_arg=/p:Version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" = "release" ]; then
-            TAG="${{ github.event.release.tag_name }}"
-            # Strip leading 'v' if present
-            VERSION="${TAG#v}"
-            echo "version_arg=/p:Version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "version_arg=" >> $GITHUB_OUTPUT
+          VERSION="${{ github.event.inputs.version || github.event.release.tag_name || '' }}"
+          VERSION="${VERSION#v}"
+          VERSION_ARG=""
+          if [ -n "$VERSION" ]; then
+            VERSION_ARG="/p:Version=$VERSION"
           fi
-
-      - name: Pack
-        run: >
-          dotnet pack
-          src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj
-          --configuration Release
-          --output ./artifacts
-          ${{ steps.version.outputs.version_arg }}
-
-      - name: Build example local NuGet feed packages
-        run: |
-          dotnet pack example/src/Acme.Core/Acme.Core.csproj --configuration Release --output example/local-packages
-          dotnet pack example/src/Acme.Utilities/Acme.Utilities.csproj --configuration Release --output example/local-packages
-
-      - name: Test example — Full solution
-        run: dotnet test example/Acme.Full.slnx
-
-      - name: Test example — AppOnly solution
-        run: dotnet test example/Acme.AppOnly.slnx
+          dotnet pack \
+            src/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution/Compze.Build.PackageReferenceOrProjectReferenceIfTargetInSolution.csproj \
+            --configuration Release \
+            --output ./artifacts \
+            $VERSION_ARG
 
       - name: Push to NuGet.org
         run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
