@@ -31,7 +31,9 @@ partial class ManagedProject
 
         var explicitPackageId = msbuildProject.GetNonEmptyPropertyOrNull("PackageId");
         var isPackableValue = msbuildProject.GetNonEmptyPropertyOrNull("IsPackable");
-        IsPackable = !isPackableValue.EqualsIgnoreCase("false") && (explicitPackageId != null || isPackableValue.EqualsIgnoreCase("true"));
+        var isExplicitlyNotPackable = isPackableValue.EqualsIgnoreCase("false");
+        var isExplicitlyPackable = isPackableValue.EqualsIgnoreCase("true");
+        IsPackable = !isExplicitlyNotPackable && (explicitPackageId != null || isExplicitlyPackable);
 
         PackageId = explicitPackageId
             ?? (IsPackable ? Path.GetFileNameWithoutExtension(csprojFile.Name) : null);
