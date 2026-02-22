@@ -22,7 +22,3 @@ This is clearly a conscious design choice (you don't want to manage version pinn
 ### 7. Original package version is discarded during csproj update
 
 `ManagedProject.CsprojUpdater.cs` lines 23–29: `RemoveExistingFlexReferences` strips all matching `PackageReference` and `ProjectReference` elements, then `AppendFlexReferencePairs` writes them back with `Version="*-*"`. If a user had `Version="2.1.0"` pinned, it's silently overwritten. This compounds issue #6 — running `flexref sync` is destructive to version information. Consider preserving the original version if one was present.
-
-### 10. No `--dry-run` or diff mode
-
-The tool modifies files in place with no preview option. For a tool that rewrites `.csproj` and `Directory.Build.props` files, a `--dry-run` flag showing what would change would build user confidence. Not a bug, but a significant UX gap.~
