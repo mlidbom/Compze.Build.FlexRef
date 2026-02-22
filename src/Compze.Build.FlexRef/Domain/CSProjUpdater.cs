@@ -5,11 +5,11 @@ using Compze.Build.FlexRef.SystemCE.XmlCE.LinqCE;
 
 namespace Compze.Build.FlexRef.Domain;
 
-class CsprojUpdater
+class CSProjUpdater
 {
     readonly FlexRefWorkspace _workspace;
 
-    internal CsprojUpdater(FlexRefWorkspace workspace) =>
+    internal CSProjUpdater(FlexRefWorkspace workspace) =>
         _workspace = workspace;
 
     public void UpdateAll()
