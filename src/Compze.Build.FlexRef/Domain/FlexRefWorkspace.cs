@@ -1,4 +1,4 @@
-namespace Compze.Build.FlexRef;
+namespace Compze.Build.FlexRef.Domain;
 
 class FlexRefWorkspace
 {

@@ -1,4 +1,4 @@
-namespace Compze.Build.FlexRef;
+namespace Compze.Build.FlexRef.Domain;
 
 class ConfigurationAlreadyExistsException(DirectoryInfo rootDirectory)
     : Exception($"Configuration already exists: {Path.Combine(rootDirectory.FullName, "FlexRef.config.xml")}")

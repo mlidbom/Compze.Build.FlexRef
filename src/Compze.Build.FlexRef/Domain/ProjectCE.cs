@@ -1,6 +1,6 @@
 using Microsoft.Build.Evaluation;
 
-namespace Compze.Build.FlexRef;
+namespace Compze.Build.FlexRef.Domain;
 
 static class ProjectCE
 {

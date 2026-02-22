@@ -1,4 +1,6 @@
-namespace Compze.Build.FlexRef;
+using Compze.Build.FlexRef.Domain;
+
+namespace Compze.Build.FlexRef.CLI;
 
 static class InitCommand
 {

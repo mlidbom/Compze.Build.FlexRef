@@ -2,7 +2,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Compze.Build.FlexRef;
+namespace Compze.Build.FlexRef.Domain;
 
 static class XDocumentCE
 {

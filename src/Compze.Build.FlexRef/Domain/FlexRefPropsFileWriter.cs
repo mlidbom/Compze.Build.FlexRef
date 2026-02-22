@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Compze.Build.FlexRef;
+namespace Compze.Build.FlexRef.Domain;
 
 static class FlexRefPropsFileWriter
 {
