@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace Compze.Build.FlexRef.Domain;
 
 partial class SlnxSolution
@@ -14,13 +16,20 @@ partial class SlnxSolution
         }
     }
 
-    SlnxSolution(FileInfo slnxFile, List<string> projectFileNames, FlexRefWorkspace workspace)
+    SlnxSolution(FileInfo slnxFile, FlexRefWorkspace workspace)
     {
         SlnxFile = slnxFile;
-        ProjectFileNames = projectFileNames;
         Workspace = workspace;
+
+        var document = XDocument.Load(slnxFile.FullName);
+        ProjectFileNames = document.Descendants("Project")
+                                   .Select(element => element.Attribute("Path")?.Value)
+                                   .Where(path => path != null)
+                                   .Select(path => Path.GetFileName(path!))
+                                   .ToList();
     }
 
+    public static List<SlnxSolution> FindAndParseAllSolutions(FlexRefWorkspace workspace) => Scanner.FindAndParseAll(workspace);
 
     internal FlexRefWorkspace Workspace { get; }
 

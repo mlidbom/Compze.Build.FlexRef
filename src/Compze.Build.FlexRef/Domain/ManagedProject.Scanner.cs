@@ -10,8 +10,7 @@ partial class ManagedProject
         {
             using var projectCollection = new ProjectCollection();
             return FindCsprojFilesRecursively(workspace.RootDirectory)
-                .Select(csprojFile => ParseCsproj(csprojFile, projectCollection, workspace))
-                .OfType<ManagedProject>()
+                .Select(csprojFile => new ManagedProject(csprojFile, projectCollection, workspace))
                 .ToList();
         }
 
@@ -27,19 +26,6 @@ partial class ManagedProject
 
                 foreach(var file in FindCsprojFilesRecursively(subdirectory))
                     yield return file;
-            }
-        }
-
-        static ManagedProject? ParseCsproj(FileInfo csprojFile, ProjectCollection projectCollection, FlexRefWorkspace workspace)
-        {
-            try
-            {
-                return new ManagedProject(csprojFile, projectCollection, workspace);
-            }
-            catch(Exception exception)
-            {
-                Console.Error.WriteLine($"Warning: Could not parse {csprojFile.FullName}: {exception.Message}");
-                return null;
             }
         }
     }

@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace Compze.Build.FlexRef.Domain;
 
 partial class SlnxSolution
@@ -8,8 +6,7 @@ partial class SlnxSolution
     {
         public static List<SlnxSolution> FindAndParseAll(FlexRefWorkspace workspace) =>
             FindSlnxFilesRecursively(workspace.RootDirectory)
-               .Select(slnxFile => ParseSlnx(slnxFile, workspace))
-               .OfType<SlnxSolution>()
+               .Select(slnxFile => new SlnxSolution(slnxFile, workspace))
                .ToList();
 
         static IEnumerable<FileInfo> FindSlnxFilesRecursively(DirectoryInfo directory)
@@ -24,26 +21,6 @@ partial class SlnxSolution
 
                 foreach(var file in FindSlnxFilesRecursively(subdirectory))
                     yield return file;
-            }
-        }
-
-        static SlnxSolution? ParseSlnx(FileInfo slnxFile, FlexRefWorkspace workspace)
-        {
-            try
-            {
-                var document = XDocument.Load(slnxFile.FullName);
-                var projectFileNames = document.Descendants("Project")
-                                               .Select(element => element.Attribute("Path")?.Value)
-                                               .Where(path => path != null)
-                                               .Select(path => Path.GetFileName(path!))
-                                               .ToList();
-
-                return new SlnxSolution(slnxFile: slnxFile, projectFileNames: projectFileNames, workspace: workspace);
-            }
-            catch(Exception exception)
-            {
-                Console.Error.WriteLine($"Warning: Could not parse {slnxFile.FullName}: {exception.Message}");
-                return null;
             }
         }
     }
