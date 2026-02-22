@@ -1,0 +1,8 @@
+﻿<ProjectConfiguration>
+  <Settings>
+    <AdditionalFilesToIncludeForProject>
+      <Value>Scenarios\**.*</Value>
+    </AdditionalFilesToIncludeForProject>
+    <RunPostBuildEvents>True</RunPostBuildEvents>
+  </Settings>
+</ProjectConfiguration>
