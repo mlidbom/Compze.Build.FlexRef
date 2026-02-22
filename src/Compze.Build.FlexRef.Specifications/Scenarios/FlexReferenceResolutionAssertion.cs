@@ -3,7 +3,7 @@ using Compze.Build.FlexRef.Domain;
 using Compze.Utilities.Testing.Must;
 using Microsoft.Build.Evaluation;
 
-namespace Compze.Build.FlexRef.Scenarios;
+namespace Compze.Build.FlexRef.Specifications.Scenarios;
 
 static class FlexReferenceResolutionAssertion
 {

@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Compze.Build.FlexRef.Scenarios;
+namespace Compze.Build.FlexRef.Specifications.Scenarios;
 
 static class ScenarioRunner
 {

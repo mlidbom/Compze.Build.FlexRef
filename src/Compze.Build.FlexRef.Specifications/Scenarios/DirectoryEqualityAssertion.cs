@@ -1,6 +1,6 @@
 using Compze.Utilities.Testing.Must;
 
-namespace Compze.Build.FlexRef.Scenarios;
+namespace Compze.Build.FlexRef.Specifications.Scenarios;
 
 static class DirectoryEqualityAssertion
 {

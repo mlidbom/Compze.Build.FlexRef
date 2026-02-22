@@ -5,7 +5,7 @@ using Compze.Utilities.Testing.Must;
 using Xunit;
 using static Compze.Utilities.Testing.Must.MustActions;
 
-namespace Compze.Build.FlexRef.Scenarios.Init.AlreadyInitialized;
+namespace Compze.Build.FlexRef.Specifications.Scenarios.Init.AlreadyInitialized;
 
 public class When_init_is_run_on_an_already_initialized_workspace
 {

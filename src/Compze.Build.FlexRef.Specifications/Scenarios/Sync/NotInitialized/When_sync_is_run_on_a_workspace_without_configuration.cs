@@ -5,7 +5,7 @@ using Compze.Utilities.Testing.Must;
 using Xunit;
 using static Compze.Utilities.Testing.Must.MustActions;
 
-namespace Compze.Build.FlexRef.Scenarios.Sync.NotInitialized;
+namespace Compze.Build.FlexRef.Specifications.Scenarios.Sync.NotInitialized;
 
 public class When_sync_is_run_on_a_workspace_without_configuration
 {
