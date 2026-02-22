@@ -21,18 +21,15 @@ partial class SlnxSolution
         Workspace = workspace;
     }
 
-    public static List<SlnxSolution> FindAndParseAllSolutions(FlexRefWorkspace workspace) =>
-        Scanner.FindAndParseAll(workspace);
 
     internal FlexRefWorkspace Workspace { get; }
 
     public List<FlexReferencedProject> AbsentFlexReferencedProjects =>
         Workspace.FlexReferencedProjects
-            .Where(flexReferencedProject => !ProjectFileNames
-                                   .Contains(flexReferencedProject.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
-            .OrderBy(flexReferencedProject => flexReferencedProject.PackageId, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+                 .Where(flexReferencedProject => !ProjectFileNames
+                                                    .Contains(flexReferencedProject.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
+                 .OrderBy(flexReferencedProject => flexReferencedProject.PackageId, StringComparer.OrdinalIgnoreCase)
+                 .ToList();
 
-    public void UpdateNCrunchFile() =>
-        new NCrunchSolution(this).UpdateOrCreate();
+    public void UpdateNCrunchFile() => new NCrunchSolution(this).UpdateOrCreate();
 }
