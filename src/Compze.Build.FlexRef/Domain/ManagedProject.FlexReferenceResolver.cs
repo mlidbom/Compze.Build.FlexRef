@@ -6,8 +6,11 @@ partial class ManagedProject
 {
     static class FlexReferenceResolver
     {
-        public static List<FlexReferencedProject> Resolve(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects)
+        public static List<FlexReferencedProject> Resolve(FlexRefWorkspace workspace)
         {
+            var configuration = workspace.ConfigurationFile;
+            var allProjects = workspace.AllProjects;
+
             var packableProjects = allProjects
                                   .Where(project => project is { IsPackable: true, PackageId: not null })
                                   .ToList();

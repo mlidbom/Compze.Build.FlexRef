@@ -27,7 +27,7 @@ class CsprojUpdater
         var rootElement = document.Root!;
 
         RemoveExistingFlexReferences(rootElement);
-        AppendFlexReferencePairs(rootElement, project.CsprojFile, project.FlexReferencedProjects);
+        AppendFlexReferencePairs(rootElement, project);
 
         document.SaveWithoutDeclaration(project.CsprojFile.FullName);
         Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({project.FlexReferencedProjects.Count} flex reference(s))");
@@ -82,11 +82,11 @@ class CsprojUpdater
         return false;
     }
 
-    static void AppendFlexReferencePairs(XElement rootElement, FileInfo consumingCsprojFile, List<FlexReferencedProject> flexReferencedProjects)
+    static void AppendFlexReferencePairs(XElement rootElement, ManagedProject project)
     {
-        foreach(var flexReferencedProject in flexReferencedProjects)
+        foreach(var flexReferencedProject in project.FlexReferencedProjects)
         {
-            var relativeProjectPath = consumingCsprojFile.ComputeRelativePathWithBackslashes(flexReferencedProject.CsprojFile);
+            var relativeProjectPath = project.CsprojFile.ComputeRelativePathWithBackslashes(flexReferencedProject.CsprojFile);
 
             rootElement.Add(
                 new XComment($" {flexReferencedProject.PackageId} — flex reference "),

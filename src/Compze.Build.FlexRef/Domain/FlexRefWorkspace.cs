@@ -8,7 +8,7 @@ class FlexRefWorkspace
    internal IReadOnlyList<ManagedProject> AllProjects { get; set; } = [];
    internal IReadOnlyList<FlexReferencedProject> FlexReferencedProjects { get; set; } = [];
 
-   FlexRefConfigurationFile ConfigurationFile { get; }
+   internal FlexRefConfigurationFile ConfigurationFile { get; }
 
    public FlexRefWorkspace(DirectoryInfo rootDirectory)
    {
@@ -32,7 +32,7 @@ class FlexRefWorkspace
 
       ConfigurationFile.Load();
 
-      FlexReferencedProjects = ManagedProject.ResolveFlexReferencedProjects(ConfigurationFile, AllProjects.ToList());
+      FlexReferencedProjects = ManagedProject.ResolveFlexReferencedProjects(this);
    }
 
    public void Init()

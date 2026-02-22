@@ -4,15 +4,15 @@ namespace Compze.Build.FlexRef.Domain;
 
 static class FlexRefPropsFileWriter
 {
-    public static FileInfo GetPropsFile(DirectoryInfo rootDirectory) =>
-        new(Path.Combine(rootDirectory.FullName, DomainConstants.BuildDirectoryName, DomainConstants.PropsFileName));
+    static FileInfo GetPropsFile(FlexRefWorkspace workspace) =>
+        new(Path.Combine(workspace.RootDirectory.FullName, DomainConstants.BuildDirectoryName, DomainConstants.PropsFileName));
 
     public static string GetMsBuildImportProjectValue() =>
         $"$(MSBuildThisFileDirectory){DomainConstants.BuildDirectoryName}\\{DomainConstants.PropsFileName}";
 
     public static void Write(FlexRefWorkspace workspace)
     {
-        var targetFile = GetPropsFile(workspace.RootDirectory);
+        var targetFile = GetPropsFile(workspace);
         Directory.CreateDirectory(targetFile.DirectoryName!);
 
         using var resourceStream = Assembly.GetExecutingAssembly()

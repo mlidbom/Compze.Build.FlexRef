@@ -48,8 +48,8 @@ partial class ManagedProject
     internal static List<ManagedProject> ScanDirectory(FlexRefWorkspace workspace) =>
         Scanner.ScanDirectory(workspace);
 
-    internal static List<FlexReferencedProject> ResolveFlexReferencedProjects(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects) =>
-        FlexReferenceResolver.Resolve(configuration, allProjects);
+    internal static List<FlexReferencedProject> ResolveFlexReferencedProjects(FlexRefWorkspace workspace) =>
+        FlexReferenceResolver.Resolve(workspace);
 
     internal FlexRefWorkspace Workspace { get; }
 
