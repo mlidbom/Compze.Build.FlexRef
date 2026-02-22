@@ -4,13 +4,6 @@
 
 This is a well-designed, well-documented project that solves a real problem clearly. The architecture is clean, the MSBuild integration is clever, and the documentation (README, design doc, examples) is excellent. The codebase is small, focused, and avoids over-engineering. Below are findings organized by severity.
 
----
-
-### 1. Mutable static state — non-resettable singleton pattern
-
-ManagedProject.cs: `_flexReferences` and `_allProjects` are static fields that can only be set once (the guard throws on re-scan). This works fine for a single CLI invocation, but it's a hidden coupling — `SyncCommand` depends on `ScanAndResolveFlexReferences` having been called earlier, with the results accessed later via static properties from `CsprojUpdater`, `NCrunchUpdater`, `DirectoryBuildPropsFileUpdater`, etc.
-
-This isn't a bug today (the CLI runs once and exits), but it makes the code harder to reason about and impossible to test in isolation. Consider passing the resolved data explicitly rather than relying on ambient static state.
 
 ## Design Concerns
 
