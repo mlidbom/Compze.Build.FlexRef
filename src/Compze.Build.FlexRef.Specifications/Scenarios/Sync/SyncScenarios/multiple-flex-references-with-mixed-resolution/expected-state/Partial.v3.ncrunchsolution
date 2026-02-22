@@ -1,0 +1,7 @@
+<SolutionConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>UsePackageReference_MyUtils = true</Value>
+    </CustomBuildProperties>
+  </Settings>
+</SolutionConfiguration>
