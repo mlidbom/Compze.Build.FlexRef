@@ -9,7 +9,14 @@ class NCrunchUpdater
     internal NCrunchUpdater(FlexRefWorkspace workspace) =>
         _workspace = workspace;
 
-    public void UpdateOrCreate(SlnxSolution solution)
+    public void UpdateAll()
+    {
+        var solutions = SlnxSolution.FindAndParseAllSolutions(_workspace.RootDirectory);
+        foreach(var solution in solutions)
+            UpdateOrCreate(solution);
+    }
+
+    void UpdateOrCreate(SlnxSolution solution)
     {
         var absentPackages = solution.FindAbsentFlexReferences(_workspace.FlexReferences);
         var ncrunchFile = solution.NCrunchFile;

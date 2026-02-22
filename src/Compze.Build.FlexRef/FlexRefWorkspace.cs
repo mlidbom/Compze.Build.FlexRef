@@ -22,18 +22,7 @@ class FlexRefWorkspace
 
    public void UpdateDirectoryBuildProps() => DirectoryBuildPropsFileUpdater.UpdateOrCreate(this);
 
-   public void UpdateCsprojFiles()
-   {
-      var updater = new CsprojUpdater(this);
-      foreach(var project in AllProjects)
-         updater.UpdateIfNeeded(project);
-   }
+   public void UpdateCsprojFiles() => new CsprojUpdater(this).UpdateAll();
 
-   public void UpdateNCrunchFiles()
-   {
-      var updater = new NCrunchUpdater(this);
-      var solutions = SlnxSolution.FindAndParseAllSolutions(RootDirectory);
-      foreach(var solution in solutions)
-         updater.UpdateOrCreate(solution);
-   }
+   public void UpdateNCrunchFiles() => new NCrunchUpdater(this).UpdateAll();
 }

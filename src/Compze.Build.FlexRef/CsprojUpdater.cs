@@ -9,7 +9,13 @@ class CsprojUpdater
     internal CsprojUpdater(FlexRefWorkspace workspace) =>
         _workspace = workspace;
 
-    public void UpdateIfNeeded(ManagedProject project)
+    public void UpdateAll()
+    {
+        foreach(var project in _workspace.AllProjects)
+            UpdateIfNeeded(project);
+    }
+
+    void UpdateIfNeeded(ManagedProject project)
     {
         var referencedFlexReferences = project.FindMatchingFlexReferences(_workspace.FlexReferences);
 
