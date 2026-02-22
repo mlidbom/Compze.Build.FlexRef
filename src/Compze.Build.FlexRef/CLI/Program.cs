@@ -16,13 +16,16 @@ static class Program
         var rootDirectoryPath = args.Length > 1 ? Path.GetFullPath(args[1]) : Directory.GetCurrentDirectory();
         var rootDirectory = new DirectoryInfo(rootDirectoryPath);
 
-        if (!rootDirectory.Exists)
+        FlexRefWorkspace workspace;
+        try
+        {
+            workspace = new FlexRefWorkspace(rootDirectory);
+        }
+        catch(RootDirectoryNotFoundException)
         {
             Console.Error.WriteLine($"Error: Directory not found: {rootDirectory.FullName}");
             return 1;
         }
-
-        var workspace = new FlexRefWorkspace(rootDirectory);
 
         return command switch
         {

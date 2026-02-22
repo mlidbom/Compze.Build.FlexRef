@@ -6,8 +6,13 @@ class FlexRefWorkspace
    internal IReadOnlyList<ManagedProject> AllProjects { get; set; } = [];
    internal IReadOnlyList<FlexReferencedProject> FlexReferencedProjects { get; set; } = [];
 
-   public FlexRefWorkspace(DirectoryInfo rootDirectory) =>
+   public FlexRefWorkspace(DirectoryInfo rootDirectory)
+   {
+      if(!rootDirectory.Exists)
+         throw new RootDirectoryNotFoundException(rootDirectory);
+
       RootDirectory = rootDirectory;
+   }
 
    bool ConfigurationExists => FlexRefConfigurationFile.ExistsIn(RootDirectory);
 

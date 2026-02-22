@@ -11,3 +11,9 @@ class ConfigurationNotFoundException(DirectoryInfo rootDirectory)
 {
     public DirectoryInfo RootDirectory { get; } = rootDirectory;
 }
+
+class RootDirectoryNotFoundException(DirectoryInfo rootDirectory)
+    : Exception($"Root directory not found: {rootDirectory.FullName}")
+{
+    public DirectoryInfo RootDirectory { get; } = rootDirectory;
+}
