@@ -5,11 +5,11 @@ using Microsoft.Build.Evaluation;
 
 namespace Compze.Build.FlexRef.Domain;
 
-record ProjectReferenceEntry(string IncludePath, string ResolvedFileName);
+internal record ProjectReferenceEntry(string IncludePath, string ResolvedFileName);
 
-record PackageReferenceEntry(string PackageName, string Version);
+internal record PackageReferenceEntry(string PackageName, string Version);
 
-partial class ManagedProject
+internal partial class ManagedProject
 {
     public FileInfo CsprojFile { get; }
     public string? PackageId { get; }
@@ -17,7 +17,7 @@ partial class ManagedProject
     public List<ProjectReferenceEntry> ProjectReferences { get; }
     public List<PackageReferenceEntry> PackageReferences { get; }
 
-    ManagedProject(FileInfo csprojFile, ProjectCollection projectCollection, FlexRefWorkspace workspace)
+    private ManagedProject(FileInfo csprojFile, ProjectCollection projectCollection, FlexRefWorkspace workspace)
     {
         Workspace = workspace;
         CsprojFile = csprojFile;
@@ -31,7 +31,7 @@ partial class ManagedProject
         IsPackable = !isExplicitlyNotPackable && (explicitPackageId != null || isExplicitlyPackable);
 
         PackageId = explicitPackageId
-            ?? (IsPackable ? Path.GetFileNameWithoutExtension(csprojFile.Name) : null);
+                    ?? (IsPackable ? Path.GetFileNameWithoutExtension(csprojFile.Name) : null);
 
         ProjectReferences = msbuildProject.GetItems("ProjectReference")
             .Select(item => item.EvaluatedInclude)
@@ -49,22 +49,17 @@ partial class ManagedProject
     internal static List<ManagedProject> ScanDirectory(FlexRefWorkspace workspace)
     {
         using var projectCollection = new ProjectCollection();
-        try
-        {
-            return workspace.RootDirectory
-                .EnumerateFiles(DomainConstants.CsprojSearchPattern, SearchOption.AllDirectories)
-                .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
-                .Select(csprojFile => new ManagedProject(csprojFile, projectCollection, workspace))
-                .ToList();
-        }
-        finally
-        {
-            projectCollection.UnloadAllProjects();//Todo: here because we have file locking issues and supposedly this can cause them. This is exploratory though.
-        }
+        return workspace.RootDirectory
+            .EnumerateFiles(DomainConstants.CsprojSearchPattern, SearchOption.AllDirectories)
+            .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
+            .Select(csprojFile => new ManagedProject(csprojFile, projectCollection, workspace))
+            .ToList();
     }
 
-    internal static List<FlexReferencedProject> ResolveFlexReferencedProjects(FlexRefWorkspace workspace) =>
-        FlexReferenceResolver.Resolve(workspace);
+    internal static List<FlexReferencedProject> ResolveFlexReferencedProjects(FlexRefWorkspace workspace)
+    {
+        return FlexReferenceResolver.Resolve(workspace);
+    }
 
     internal FlexRefWorkspace Workspace { get; }
 
@@ -74,22 +69,24 @@ partial class ManagedProject
         {
             var result = new List<FlexReferencedProject>();
 
-            foreach(var flexReferencedProject in Workspace.FlexReferencedProjects)
+            foreach (var flexReferencedProject in Workspace.FlexReferencedProjects)
             {
-                if(CsprojFile.FullName.EqualsIgnoreCase(flexReferencedProject.CsprojFile.FullName))
+                if (CsprojFile.FullName.EqualsIgnoreCase(flexReferencedProject.CsprojFile.FullName))
                     continue;
 
                 var hasMatchingProjectReference = ProjectReferences
-                                                         .Any(reference => reference.ResolvedFileName.EqualsIgnoreCase(flexReferencedProject.CsprojFile.Name));
+                    .Any(reference =>
+                        reference.ResolvedFileName.EqualsIgnoreCase(flexReferencedProject.CsprojFile.Name));
 
                 var hasMatchingPackageReference = PackageReferences
-                                                         .Any(reference => reference.PackageName.EqualsIgnoreCase(flexReferencedProject.PackageId));
+                    .Any(reference => reference.PackageName.EqualsIgnoreCase(flexReferencedProject.PackageId));
 
-                if(hasMatchingProjectReference || hasMatchingPackageReference)
+                if (hasMatchingProjectReference || hasMatchingPackageReference)
                     result.Add(flexReferencedProject);
             }
 
-            return result.OrderBy(flexReferencedProject => flexReferencedProject.PackageId, StringComparer.OrdinalIgnoreCase).ToList();
+            return result.OrderBy(flexReferencedProject => flexReferencedProject.PackageId,
+                StringComparer.OrdinalIgnoreCase).ToList();
         }
     }
 }

@@ -24,9 +24,9 @@ static class DirectoryEqualityAssertion
 
       foreach(var relativeFilePath in expectedRelativeFilePaths)
       {
-         var expectedContent = NormalizeLineEndings(new FileInfo(Path.Combine(expectedDirectory.FullName, relativeFilePath)).OpenText().ReadToEnd());
-         var actualContent = NormalizeLineEndings(new FileInfo(Path.Combine(actualDirectory.FullName, relativeFilePath)).OpenText().ReadToEnd());
-
+         var expectedContent = NormalizeLineEndings(File.ReadAllText(Path.Combine(expectedDirectory.FullName, relativeFilePath)));
+         var actualContent = NormalizeLineEndings(File.ReadAllText(Path.Combine(actualDirectory.FullName, relativeFilePath)));
+      
          try
          {
             actualContent.Must().Be(expectedContent);
