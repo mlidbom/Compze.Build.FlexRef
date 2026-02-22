@@ -22,6 +22,7 @@ static class ScenarioRunner
          tempWorkFolder.Delete(true);
 
       CopyDirectory(startState, tempWorkFolder);
+      tempWorkFolder.Refresh();
 
       var workspace = new Domain.FlexRefWorkspace(tempWorkFolder);
       command(workspace);
