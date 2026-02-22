@@ -1,3 +1,5 @@
+using Compze.Build.FlexRef.SystemCE.IOCE;
+
 namespace Compze.Build.FlexRef.Domain;
 
 partial class SlnxSolution
@@ -5,23 +7,10 @@ partial class SlnxSolution
     static class Scanner
     {
         public static List<SlnxSolution> FindAndParseAll(FlexRefWorkspace workspace) =>
-            FindSlnxFilesRecursively(workspace.RootDirectory)
+            workspace.RootDirectory
+               .EnumerateFiles(DomainConstants.SlnxSearchPattern, SearchOption.AllDirectories)
+               .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
                .Select(slnxFile => new SlnxSolution(slnxFile, workspace))
                .ToList();
-
-        static IEnumerable<FileInfo> FindSlnxFilesRecursively(DirectoryInfo directory)
-        {
-            foreach(var file in directory.GetFiles(DomainConstants.SlnxSearchPattern))
-                yield return file;
-
-            foreach(var subdirectory in directory.GetDirectories())
-            {
-                if(DomainConstants.DirectoriesToSkip.Contains(subdirectory.Name, StringComparer.OrdinalIgnoreCase))
-                    continue;
-
-                foreach(var file in FindSlnxFilesRecursively(subdirectory))
-                    yield return file;
-            }
-        }
     }
 }
