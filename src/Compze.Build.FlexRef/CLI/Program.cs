@@ -1,4 +1,5 @@
 using Compze.Build.FlexRef.Domain;
+using Compze.Build.FlexRef.Domain.Exceptions;
 using Microsoft.Build.Locator;
 
 namespace Compze.Build.FlexRef.CLI;

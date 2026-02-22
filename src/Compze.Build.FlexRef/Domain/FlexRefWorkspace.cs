@@ -1,3 +1,5 @@
+using Compze.Build.FlexRef.Domain.Exceptions;
+
 namespace Compze.Build.FlexRef.Domain;
 
 class FlexRefWorkspace
