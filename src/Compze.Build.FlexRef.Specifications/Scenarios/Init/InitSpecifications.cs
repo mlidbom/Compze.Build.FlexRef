@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Xunit;
 
-namespace Compze.Build.FlexRef.Specifications.Init;
+namespace Compze.Build.FlexRef.Scenarios.Init;
 
 public class InitSpecifications
 {

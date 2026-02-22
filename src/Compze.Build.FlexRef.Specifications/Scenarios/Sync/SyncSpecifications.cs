@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Xunit;
 
-namespace Compze.Build.FlexRef.Specifications.Sync;
+namespace Compze.Build.FlexRef.Scenarios.Sync;
 
 public class SyncSpecifications
 {

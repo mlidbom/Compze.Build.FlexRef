@@ -4,7 +4,7 @@ using Compze.Utilities.Testing.Must;
 using Microsoft.Build.Evaluation;
 using Xunit;
 
-namespace Compze.Build.FlexRef.Specifications;
+namespace Compze.Build.FlexRef.Scenarios;
 
 static class ScenarioRunner
 {
