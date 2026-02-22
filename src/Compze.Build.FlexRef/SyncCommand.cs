@@ -6,15 +6,18 @@ static class SyncCommand
     {
         Console.WriteLine($"Syncing FlexRef in: {rootDirectory.FullName}");
 
-        if(!FlexRefConfigurationFile.ExistsIn(rootDirectory))
+        FlexRefWorkspace workspace;
+        try
         {
-            Console.Error.WriteLine($"Error: FlexRef.config.xml not found in {rootDirectory.FullName}.");
+            Console.WriteLine("Scanning projects...");
+            workspace = FlexRefWorkspace.ScanAndResolve(rootDirectory);
+        }
+        catch(ConfigurationNotFoundException)
+        {
+            Console.Error.WriteLine("Error: FlexRef.config.xml not found.");
             Console.Error.WriteLine("Run 'flexref init' first to create the configuration.");
             return 1;
         }
-
-        Console.WriteLine("Scanning projects...");
-        var workspace = FlexRefWorkspace.ScanAndResolve(rootDirectory);
         Console.WriteLine($"  Resolved {workspace.FlexReferencedProjects.Count} flex-referenced project(s):");
         foreach(var flexReferencedProject in workspace.FlexReferencedProjects)
             Console.WriteLine($"    - {flexReferencedProject.PackageId} ({flexReferencedProject.CsprojFile.Name})");

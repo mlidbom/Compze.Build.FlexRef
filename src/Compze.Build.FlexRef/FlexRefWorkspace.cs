@@ -16,6 +16,8 @@ class FlexRefWorkspace
          project.Workspace = this;
    }
 
+   public bool ConfigurationExists => FlexRefConfigurationFile.ExistsIn(RootDirectory);
+
    public static FlexRefWorkspace Scan(DirectoryInfo rootDirectory)
    {
       var allProjects = ManagedProject.ScanDirectory(rootDirectory);
@@ -24,6 +26,9 @@ class FlexRefWorkspace
 
    public static FlexRefWorkspace ScanAndResolve(DirectoryInfo rootDirectory)
    {
+      if(!FlexRefConfigurationFile.ExistsIn(rootDirectory))
+         throw new ConfigurationNotFoundException(rootDirectory);
+
       var configFile = new FlexRefConfigurationFile(rootDirectory);
       configFile.Load();
 
@@ -32,8 +37,13 @@ class FlexRefWorkspace
       return new FlexRefWorkspace(rootDirectory, allProjects, flexReferencedProjects);
    }
 
-   public void CreateDefaultConfiguration() =>
+   public void CreateDefaultConfiguration()
+   {
+      if(ConfigurationExists)
+         throw new ConfigurationAlreadyExistsException(RootDirectory);
+
       new FlexRefConfigurationFile(RootDirectory).CreateDefault(AllProjects);
+   }
 
    public void WriteFlexRefProps() =>
       FlexRefPropsFileWriter.WriteToDirectory(RootDirectory);
