@@ -31,4 +31,7 @@ partial class SlnxSolution
                                    .Contains(flexReferencedProject.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(flexReferencedProject => flexReferencedProject.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
+
+    public void UpdateNCrunchFile() =>
+        new NCrunchSolution(NCrunchFile, AbsentFlexReferencedProjects).UpdateOrCreate();
 }

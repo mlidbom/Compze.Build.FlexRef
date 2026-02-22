@@ -57,6 +57,11 @@ class FlexRefWorkspace
       FlexRefPropsFileWriter.WriteToDirectory(RootDirectory);
       DirectoryBuildPropsFileUpdater.UpdateOrCreate(this);
       new CsprojUpdater(this).UpdateAll();
-      new NCrunchUpdater(this).UpdateAll();
+
+      foreach(var solution in SlnxSolution.FindAndParseAllSolutions(RootDirectory))
+      {
+         solution.Workspace = this;
+         solution.UpdateNCrunchFile();
+      }
    }
 }
