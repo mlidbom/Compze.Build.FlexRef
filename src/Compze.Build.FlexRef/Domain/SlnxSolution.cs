@@ -34,5 +34,5 @@ partial class SlnxSolution
             .ToList();
 
     public void UpdateNCrunchFile() =>
-        new NCrunchSolution(NCrunchFile, AbsentFlexReferencedProjects).UpdateOrCreate();
+        new NCrunchSolution(this).UpdateOrCreate();
 }

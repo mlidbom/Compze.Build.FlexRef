@@ -19,22 +19,44 @@ class FlexRefConfigurationFile
         public const string Name = "Name";
     }
 
-    public DirectoryInfo RootDirectory { get; }
+    FlexRefWorkspace Workspace { get; }
     public FileInfo ConfigFile { get; }
     public bool UseAutoDiscover { get; private set; }
     public List<string> AutoDiscoverExclusions { get; private set; } = [];
     public List<string> ExplicitPackageNames { get; private set; } = [];
 
-    public FlexRefConfigurationFile(DirectoryInfo rootDirectory)
+    public FlexRefConfigurationFile(FlexRefWorkspace workspace)
     {
-        RootDirectory = rootDirectory;
-        ConfigFile = new FileInfo(Path.Combine(rootDirectory.FullName, DomainConstants.ConfigurationFileName));
+        Workspace = workspace;
+        ConfigFile = new FileInfo(Path.Combine(workspace.RootDirectory.FullName, DomainConstants.ConfigurationFileName));
     }
 
     public static bool ExistsIn(DirectoryInfo rootDirectory) =>
         File.Exists(Path.Combine(rootDirectory.FullName, DomainConstants.ConfigurationFileName));
 
     public bool Exists() => ConfigFile.Exists;
+
+    public void CreateDefault()
+    {
+        var packableProjects = Workspace.AllProjects
+            .Where(project => project is { IsPackable: true, PackageId: not null })
+            .OrderBy(project => project.PackageId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        Console.WriteLine($"  Found {packableProjects.Count} packable project(s):");
+        foreach (var project in packableProjects)
+        {
+            Console.WriteLine($"    - {project.PackageId} ({project.CsprojFile.Name})");
+
+            var expectedFileName = project.PackageId + DomainConstants.CsprojFileExtension;
+            if (!project.CsprojFile.Name.EqualsIgnoreCase(expectedFileName))
+                Console.Error.WriteLine($"      Warning: Package ID '{project.PackageId}' does not match file name '{project.CsprojFile.Name}'");
+        }
+
+        var packageIds = packableProjects.Select(project => project.PackageId!).ToList();
+        WriteDefaultConfigFile(packageIds);
+        Console.WriteLine($"  Created: {ConfigFile.FullName}");
+    }
 
     public void Load()
     {
@@ -59,28 +81,6 @@ class FlexRefConfigurationFile
                               .Where(name => name != null)
                               .Select(name => name!)
                               .ToList();
-    }
-
-    public void CreateDefault(IReadOnlyList<ManagedProject> allProjects)
-    {
-        var packableProjects = allProjects
-            .Where(project => project is { IsPackable: true, PackageId: not null })
-            .OrderBy(project => project.PackageId, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        Console.WriteLine($"  Found {packableProjects.Count} packable project(s):");
-        foreach (var project in packableProjects)
-        {
-            Console.WriteLine($"    - {project.PackageId} ({project.CsprojFile.Name})");
-
-            var expectedFileName = project.PackageId + DomainConstants.CsprojFileExtension;
-            if (!project.CsprojFile.Name.EqualsIgnoreCase(expectedFileName))
-                Console.Error.WriteLine($"      Warning: Package ID '{project.PackageId}' does not match file name '{project.CsprojFile.Name}'");
-        }
-
-        var packageIds = packableProjects.Select(project => project.PackageId!).ToList();
-        WriteDefaultConfigFile(packageIds);
-        Console.WriteLine($"  Created: {ConfigFile.FullName}");
     }
 
     void WriteDefaultConfigFile(List<string> discoveredPackageIds)

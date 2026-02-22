@@ -5,18 +5,16 @@ namespace Compze.Build.FlexRef.Domain;
 
 class NCrunchSolution
 {
-    readonly FileInfo _file;
-    readonly List<FlexReferencedProject> _absentFlexReferencedProjects;
+    readonly SlnxSolution _slnxSolution;
+    FileInfo File => _slnxSolution.NCrunchFile;
+    List<FlexReferencedProject> AbsentFlexReferencedProjects => _slnxSolution.AbsentFlexReferencedProjects;
 
-    internal NCrunchSolution(FileInfo file, List<FlexReferencedProject> absentFlexReferencedProjects)
-    {
-        _file = file;
-        _absentFlexReferencedProjects = absentFlexReferencedProjects;
-    }
+    internal NCrunchSolution(SlnxSolution slnxSolution) =>
+        _slnxSolution = slnxSolution;
 
     public void UpdateOrCreate()
     {
-        if(_file.Exists)
+        if(File.Exists)
             Update();
         else
             Create();
@@ -26,10 +24,10 @@ class NCrunchSolution
     {
         var settingsElement = new XElement("Settings");
 
-        if(_absentFlexReferencedProjects.Count > 0)
+        if(AbsentFlexReferencedProjects.Count > 0)
         {
             var customBuildProperties = new XElement("CustomBuildProperties");
-            foreach(var flexReferencedProject in _absentFlexReferencedProjects)
+            foreach(var flexReferencedProject in AbsentFlexReferencedProjects)
                 customBuildProperties.Add(new XElement("Value", $"{flexReferencedProject.PropertyName} = true"));
             settingsElement.Add(customBuildProperties);
         }
@@ -37,13 +35,13 @@ class NCrunchSolution
         var document = new XDocument(
             new XElement("SolutionConfiguration", settingsElement));
 
-        document.SaveWithoutDeclaration(_file.FullName);
-        Console.WriteLine($"  Created: {_file.FullName} ({_absentFlexReferencedProjects.Count} absent package(s))");
+        document.SaveWithoutDeclaration(File.FullName);
+        Console.WriteLine($"  Created: {File.FullName} ({AbsentFlexReferencedProjects.Count} absent package(s))");
     }
 
     void Update()
     {
-        var document = XDocument.Load(_file.FullName);
+        var document = XDocument.Load(File.FullName);
         var rootElement = document.Root!;
 
         var settingsElement = rootElement.Element("Settings");
@@ -65,7 +63,7 @@ class NCrunchSolution
                 value.Remove();
         }
 
-        if(_absentFlexReferencedProjects.Count > 0)
+        if(AbsentFlexReferencedProjects.Count > 0)
         {
             if(customBuildProperties == null)
             {
@@ -73,14 +71,14 @@ class NCrunchSolution
                 settingsElement.Add(customBuildProperties);
             }
 
-            foreach(var flexReferencedProject in _absentFlexReferencedProjects)
+            foreach(var flexReferencedProject in AbsentFlexReferencedProjects)
                 customBuildProperties.Add(new XElement("Value", $"{flexReferencedProject.PropertyName} = true"));
         }
 
         if(customBuildProperties is { HasElements: false })
             customBuildProperties.Remove();
 
-        document.SaveWithoutDeclaration(_file.FullName);
-        Console.WriteLine($"  Updated: {_file.FullName} ({_absentFlexReferencedProjects.Count} absent package(s))");
+        document.SaveWithoutDeclaration(File.FullName);
+        Console.WriteLine($"  Updated: {File.FullName} ({AbsentFlexReferencedProjects.Count} absent package(s))");
     }
 }

@@ -10,9 +10,9 @@ static class FlexRefPropsFileWriter
     public static string GetMsBuildImportProjectValue() =>
         $"$(MSBuildThisFileDirectory){DomainConstants.BuildDirectoryName}\\{DomainConstants.PropsFileName}";
 
-    public static void WriteToDirectory(DirectoryInfo rootDirectory)
+    public static void Write(FlexRefWorkspace workspace)
     {
-        var targetFile = GetPropsFile(rootDirectory);
+        var targetFile = GetPropsFile(workspace.RootDirectory);
         Directory.CreateDirectory(targetFile.DirectoryName!);
 
         using var resourceStream = Assembly.GetExecutingAssembly()

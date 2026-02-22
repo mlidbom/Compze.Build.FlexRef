@@ -29,7 +29,7 @@ class FlexRefWorkspace
       if(!ConfigurationExists)
          throw new ConfigurationNotFoundException(RootDirectory);
 
-      var configFile = new FlexRefConfigurationFile(RootDirectory);
+      var configFile = new FlexRefConfigurationFile(this);
       configFile.Load();
 
       FlexReferencedProjects = ManagedProject.ResolveFlexReferencedProjects(configFile, AllProjects.ToList());
@@ -42,8 +42,8 @@ class FlexRefWorkspace
       if(ConfigurationExists)
          throw new ConfigurationAlreadyExistsException(RootDirectory);
 
-      new FlexRefConfigurationFile(RootDirectory).CreateDefault(AllProjects);
-      FlexRefPropsFileWriter.WriteToDirectory(RootDirectory);
+      new FlexRefConfigurationFile(this).CreateDefault();
+      FlexRefPropsFileWriter.Write(this);
    }
 
    public void Sync()
@@ -51,7 +51,7 @@ class FlexRefWorkspace
       ScanProjects();
       LoadConfigurationAndResolve();
 
-      FlexRefPropsFileWriter.WriteToDirectory(RootDirectory);
+      FlexRefPropsFileWriter.Write(this);
       DirectoryBuildPropsFileUpdater.UpdateOrCreate(this);
       new CsprojUpdater(this).UpdateAll();
 
