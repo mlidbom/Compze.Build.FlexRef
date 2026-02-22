@@ -23,4 +23,16 @@
     <ProjectReference Include="..\Compze.Build.FlexRef\Compze.Build.FlexRef.csproj" />
   </ItemGroup>
 
+  <!-- Copy real MSBuild runtime assemblies from the SDK into the test output directory.
+       Without this, test hosts like NCrunch may probe the NuGet cache and load the
+       reference-only assemblies (which cannot be executed), causing
+       BadImageFormatException before MSBuildLocator gets a chance to redirect. -->
+  <Target Name="CopyMSBuildRuntimeAssemblies" AfterTargets="Build">
+    <ItemGroup>
+      <_MSBuildRuntimeAssemblies Include="$(MSBuildBinPath)\Microsoft.Build*.dll" />
+      <_MSBuildRuntimeAssemblies Include="$(MSBuildBinPath)\Microsoft.NET.StringTools.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_MSBuildRuntimeAssemblies)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
