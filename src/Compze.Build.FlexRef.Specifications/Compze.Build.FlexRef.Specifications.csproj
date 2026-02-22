@@ -27,7 +27,7 @@
        Without this, test hosts like NCrunch may probe the NuGet cache and load the
        reference-only assemblies (which cannot be executed), causing
        BadImageFormatException before MSBuildLocator gets a chance to redirect. -->
-  <Target Name="CopyMSBuildRuntimeAssemblies" AfterTargets="Build">
+  <Target Name="CopyMSBuildRuntimeAssemblies" AfterTargets="Build" Condition="'$(NCrunch)' == '1'">
     <ItemGroup>
       <_MSBuildRuntimeAssemblies Include="$(MSBuildBinPath)\Microsoft.Build*.dll" />
       <_MSBuildRuntimeAssemblies Include="$(MSBuildBinPath)\Microsoft.NET.StringTools.dll" />
