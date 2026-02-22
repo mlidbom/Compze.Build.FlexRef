@@ -82,9 +82,9 @@ class DirectoryBuildPropsFileUpdater
 
     void AddUsePackageReferenceProperties()
     {
-        if(_workspace.FlexReferences.Count == 0) return;
+        if(_workspace.FlexReferencedProjects.Count == 0) return;
 
-        var sortedPackages = _workspace.FlexReferences
+        var sortedPackages = _workspace.FlexReferencedProjects
             .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

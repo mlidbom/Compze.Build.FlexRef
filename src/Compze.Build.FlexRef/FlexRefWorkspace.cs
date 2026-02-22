@@ -4,20 +4,23 @@ class FlexRefWorkspace
 {
    public DirectoryInfo RootDirectory { get; }
    public IReadOnlyList<ManagedProject> AllProjects { get; }
-   public IReadOnlyList<FlexReference> FlexReferences { get; }
+   public IReadOnlyList<FlexReferencedProject> FlexReferencedProjects { get; }
 
-   internal FlexRefWorkspace(DirectoryInfo rootDirectory, List<ManagedProject> allProjects, List<FlexReference> flexReferences)
+   internal FlexRefWorkspace(DirectoryInfo rootDirectory, List<ManagedProject> allProjects, List<FlexReferencedProject> flexReferencedProjects)
    {
       RootDirectory = rootDirectory;
       AllProjects = allProjects;
-      FlexReferences = flexReferences;
+      FlexReferencedProjects = flexReferencedProjects;
+
+      foreach(var project in allProjects)
+         project.Workspace = this;
    }
 
    public static FlexRefWorkspace ScanAndResolve(DirectoryInfo rootDirectory, FlexRefConfigurationFile configuration)
    {
       var allProjects = ManagedProject.ScanDirectory(rootDirectory);
-      var flexReferences = ManagedProject.ResolveFlexReferences(configuration, allProjects);
-      return new FlexRefWorkspace(rootDirectory, allProjects, flexReferences);
+      var flexReferencedProjects = ManagedProject.ResolveFlexReferencedProjects(configuration, allProjects);
+      return new FlexRefWorkspace(rootDirectory, allProjects, flexReferencedProjects);
    }
 
    public void UpdateDirectoryBuildProps() => DirectoryBuildPropsFileUpdater.UpdateOrCreate(this);

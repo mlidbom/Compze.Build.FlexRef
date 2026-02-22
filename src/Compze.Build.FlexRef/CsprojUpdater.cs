@@ -17,19 +17,17 @@ class CsprojUpdater
 
     void UpdateIfNeeded(ManagedProject project)
     {
-        var referencedFlexReferences = project.FindMatchingFlexReferences(_workspace.FlexReferences);
-
-        if(referencedFlexReferences.Count == 0)
+        if(project.FlexReferencedProjects.Count == 0)
             return;
 
         var document = XDocument.Load(project.CsprojFile.FullName);
         var rootElement = document.Root!;
 
         RemoveExistingFlexReferences(rootElement);
-        AppendFlexReferencePairs(rootElement, project.CsprojFile, referencedFlexReferences);
+        AppendFlexReferencePairs(rootElement, project.CsprojFile, project.FlexReferencedProjects);
 
         document.SaveWithoutDeclaration(project.CsprojFile.FullName);
-        Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({referencedFlexReferences.Count} flex reference(s))");
+        Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({project.FlexReferencedProjects.Count} flex reference(s))");
     }
 
     void RemoveExistingFlexReferences(XElement rootElement)
@@ -38,7 +36,7 @@ class CsprojUpdater
                                                .Where(itemGroup =>
                                                 {
                                                     var condition = itemGroup.Attribute("Condition")?.Value ?? "";
-                                                    return _workspace.FlexReferences.Any(package => condition.Contains(package.PropertyName));
+                                                    return _workspace.FlexReferencedProjects.Any(flexReferencedProject => condition.Contains(flexReferencedProject.PropertyName));
                                                 })
                                                .ToList();
 
@@ -48,7 +46,7 @@ class CsprojUpdater
         foreach(var itemGroup in rootElement.Elements("ItemGroup").ToList())
         {
             var referencesToRemove = itemGroup.Elements()
-                                              .Where(IsFlexReference)
+                                              .Where(IsReferenceToFlexReferencedProject)
                                               .ToList();
 
             foreach(var reference in referencesToRemove)
@@ -59,14 +57,14 @@ class CsprojUpdater
         }
     }
 
-    bool IsFlexReference(XElement element)
+    bool IsReferenceToFlexReferencedProject(XElement element)
     {
         if(element.Name.LocalName == "PackageReference")
         {
             var includeName = element.Attribute("Include")?.Value;
             return includeName != null &&
-                   _workspace.FlexReferences.Any(package =>
-                                                     package.PackageId.EqualsIgnoreCase(includeName));
+                   _workspace.FlexReferencedProjects.Any(flexReferencedProject =>
+                                                     flexReferencedProject.PackageId.EqualsIgnoreCase(includeName));
         }
 
         if(element.Name.LocalName == "ProjectReference")
@@ -74,28 +72,28 @@ class CsprojUpdater
             var includePath = element.Attribute("Include")?.Value;
             if(includePath == null) return false;
             var fileName = Path.GetFileName(includePath);
-            return _workspace.FlexReferences.Any(package =>
-                                                     package.CsprojFile.Name.EqualsIgnoreCase(fileName));
+            return _workspace.FlexReferencedProjects.Any(flexReferencedProject =>
+                                                     flexReferencedProject.CsprojFile.Name.EqualsIgnoreCase(fileName));
         }
 
         return false;
     }
 
-    static void AppendFlexReferencePairs(XElement rootElement, FileInfo consumingCsprojFile, List<FlexReference> referencedPackages)
+    static void AppendFlexReferencePairs(XElement rootElement, FileInfo consumingCsprojFile, List<FlexReferencedProject> flexReferencedProjects)
     {
-        foreach(var package in referencedPackages)
+        foreach(var flexReferencedProject in flexReferencedProjects)
         {
-            var relativeProjectPath = consumingCsprojFile.ComputeRelativePathWithBackslashes(package.CsprojFile);
+            var relativeProjectPath = consumingCsprojFile.ComputeRelativePathWithBackslashes(flexReferencedProject.CsprojFile);
 
             rootElement.Add(
-                new XComment($" {package.PackageId} — flex reference "),
+                new XComment($" {flexReferencedProject.PackageId} — flex reference "),
                 new XElement("ItemGroup",
-                             new XAttribute("Condition", $"'$({package.PropertyName})' == 'true'"),
+                             new XAttribute("Condition", $"'$({flexReferencedProject.PropertyName})' == 'true'"),
                              new XElement("PackageReference",
-                                          new XAttribute("Include", package.PackageId),
+                                          new XAttribute("Include", flexReferencedProject.PackageId),
                                           new XAttribute("Version", "*-*"))),
                 new XElement("ItemGroup",
-                             new XAttribute("Condition", $"'$({package.PropertyName})' != 'true'"),
+                             new XAttribute("Condition", $"'$({flexReferencedProject.PropertyName})' != 'true'"),
                              new XElement("ProjectReference",
                                           new XAttribute("Include", relativeProjectPath))));
         }

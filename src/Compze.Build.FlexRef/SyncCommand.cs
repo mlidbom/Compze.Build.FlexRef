@@ -19,9 +19,9 @@ static class SyncCommand
 
         Console.WriteLine("Scanning projects...");
         var workspace = FlexRefWorkspace.ScanAndResolve(rootDirectory, configFile);
-        Console.WriteLine($"  Resolved {workspace.FlexReferences.Count} flex reference(s):");
-        foreach(var package in workspace.FlexReferences)
-            Console.WriteLine($"    - {package.PackageId} ({package.CsprojFile.Name})");
+        Console.WriteLine($"  Resolved {workspace.FlexReferencedProjects.Count} flex-referenced project(s):");
+        foreach(var flexReferencedProject in workspace.FlexReferencedProjects)
+            Console.WriteLine($"    - {flexReferencedProject.PackageId} ({flexReferencedProject.CsprojFile.Name})");
 
         Console.WriteLine();
         Console.WriteLine("Writing FlexRef.props...");

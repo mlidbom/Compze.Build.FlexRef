@@ -23,10 +23,12 @@ partial class SlnxSolution
     public static List<SlnxSolution> FindAndParseAllSolutions(DirectoryInfo rootDirectory) =>
         Scanner.FindAndParseAll(rootDirectory);
 
-    public List<FlexReference> FindAbsentFlexReferences(IReadOnlyList<FlexReference> flexReferences) =>
-        flexReferences
-            .Where(package => !ProjectFileNames
-                                   .Contains(package.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
-            .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+    internal FlexRefWorkspace Workspace { get; set; } = null!;
+
+    public List<FlexReferencedProject> AbsentFlexReferencedProjects =>
+        Workspace.FlexReferencedProjects
+            .Where(flexReferencedProject => !ProjectFileNames
+                                   .Contains(flexReferencedProject.CsprojFile.Name, StringComparer.OrdinalIgnoreCase))
+            .OrderBy(flexReferencedProject => flexReferencedProject.PackageId, StringComparer.OrdinalIgnoreCase)
             .ToList();
 }

@@ -4,13 +4,13 @@ partial class ManagedProject
 {
     static class FlexReferenceResolver
     {
-        public static List<FlexReference> Resolve(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects)
+        public static List<FlexReferencedProject> Resolve(FlexRefConfigurationFile configuration, List<ManagedProject> allProjects)
         {
             var packableProjects = allProjects
                                   .Where(project => project is { IsPackable: true, PackageId: not null })
                                   .ToList();
 
-            var resolvedPackages = new List<FlexReference>();
+            var resolvedPackages = new List<FlexReferencedProject>();
 
             if(configuration.UseAutoDiscover)
             {
@@ -19,7 +19,7 @@ partial class ManagedProject
                     if(configuration.AutoDiscoverExclusions.Any(exclusion => exclusion.EqualsIgnoreCase(project.PackageId!)))
                         continue;
 
-                    resolvedPackages.Add(new FlexReference(project));
+                    resolvedPackages.Add(new FlexReferencedProject(project));
                 }
             }
 
@@ -32,7 +32,7 @@ partial class ManagedProject
 
                 if(matchingProject != null)
                 {
-                    resolvedPackages.Add(new FlexReference(matchingProject));
+                    resolvedPackages.Add(new FlexReferencedProject(matchingProject));
                 } else
                 {
                     Console.Error.WriteLine($"  Warning: Explicit package '{explicitPackageName}' was not found in any project.");

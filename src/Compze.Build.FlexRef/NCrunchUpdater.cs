@@ -13,29 +13,31 @@ class NCrunchUpdater
     {
         var solutions = SlnxSolution.FindAndParseAllSolutions(_workspace.RootDirectory);
         foreach(var solution in solutions)
+        {
+            solution.Workspace = _workspace;
             UpdateOrCreate(solution);
+        }
     }
 
     void UpdateOrCreate(SlnxSolution solution)
     {
-        var absentPackages = solution.FindAbsentFlexReferences(_workspace.FlexReferences);
         var ncrunchFile = solution.NCrunchFile;
 
         if(ncrunchFile.Exists)
-            UpdateExistingNCrunchFile(ncrunchFile, absentPackages);
+            UpdateExistingNCrunchFile(ncrunchFile, solution.AbsentFlexReferencedProjects);
         else
-            CreateNewNCrunchFile(ncrunchFile, absentPackages);
+            CreateNewNCrunchFile(ncrunchFile, solution.AbsentFlexReferencedProjects);
     }
 
-    static void CreateNewNCrunchFile(FileInfo file, List<FlexReference> absentPackages)
+    static void CreateNewNCrunchFile(FileInfo file, List<FlexReferencedProject> absentFlexReferencedProjects)
     {
         var settingsElement = new XElement("Settings");
 
-        if(absentPackages.Count > 0)
+        if(absentFlexReferencedProjects.Count > 0)
         {
             var customBuildProperties = new XElement("CustomBuildProperties");
-            foreach(var package in absentPackages)
-                customBuildProperties.Add(new XElement("Value", $"{package.PropertyName} = true"));
+            foreach(var flexReferencedProject in absentFlexReferencedProjects)
+                customBuildProperties.Add(new XElement("Value", $"{flexReferencedProject.PropertyName} = true"));
             settingsElement.Add(customBuildProperties);
         }
 
@@ -43,10 +45,10 @@ class NCrunchUpdater
             new XElement("SolutionConfiguration", settingsElement));
 
         document.SaveWithoutDeclaration(file.FullName);
-        Console.WriteLine($"  Created: {file.FullName} ({absentPackages.Count} absent package(s))");
+        Console.WriteLine($"  Created: {file.FullName} ({absentFlexReferencedProjects.Count} absent package(s))");
     }
 
-    static void UpdateExistingNCrunchFile(FileInfo file, List<FlexReference> absentPackages)
+    static void UpdateExistingNCrunchFile(FileInfo file, List<FlexReferencedProject> absentFlexReferencedProjects)
     {
         var document = XDocument.Load(file.FullName);
         var rootElement = document.Root!;
@@ -72,7 +74,7 @@ class NCrunchUpdater
         }
 
         // Append new FlexRef entries at the end
-        if(absentPackages.Count > 0)
+        if(absentFlexReferencedProjects.Count > 0)
         {
             if(customBuildProperties == null)
             {
@@ -80,8 +82,8 @@ class NCrunchUpdater
                 settingsElement.Add(customBuildProperties);
             }
 
-            foreach(var package in absentPackages)
-                customBuildProperties.Add(new XElement("Value", $"{package.PropertyName} = true"));
+            foreach(var flexReferencedProject in absentFlexReferencedProjects)
+                customBuildProperties.Add(new XElement("Value", $"{flexReferencedProject.PropertyName} = true"));
         }
 
         // Remove CustomBuildProperties element entirely if it has no entries
@@ -89,6 +91,6 @@ class NCrunchUpdater
             customBuildProperties.Remove();
 
         document.SaveWithoutDeclaration(file.FullName);
-        Console.WriteLine($"  Updated: {file.FullName} ({absentPackages.Count} absent package(s))");
+        Console.WriteLine($"  Updated: {file.FullName} ({absentFlexReferencedProjects.Count} absent package(s))");
     }
 }
