@@ -26,11 +26,29 @@ class CsprojUpdater
         var document = XDocument.Load(project.CsprojFile.FullName);
         var rootElement = document.Root!;
 
+        var existingPackageVersions = ExtractExistingPackageVersions(rootElement);
         RemoveExistingFlexReferences(rootElement);
-        AppendFlexReferencePairs(rootElement, project);
+        AppendFlexReferencePairs(rootElement, project, existingPackageVersions);
 
         document.SaveWithoutDeclaration(project.CsprojFile.FullName);
         Console.WriteLine($"  Updated: {project.CsprojFile.FullName} ({project.FlexReferencedProjects.Count} flex reference(s))");
+    }
+
+    Dictionary<string, string> ExtractExistingPackageVersions(XElement rootElement)
+    {
+        var versions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach(var packageRef in rootElement.Elements("ItemGroup").Elements("PackageReference"))
+        {
+            var includeName = packageRef.Attribute("Include")?.Value;
+            var version = packageRef.Attribute("Version")?.Value;
+
+            if(includeName != null && version != null &&
+               _workspace.FlexReferencedProjects.Any(flexReferencedProject => flexReferencedProject.PackageId.EqualsIgnoreCase(includeName)))
+                versions[includeName] = version;
+        }
+
+        return versions;
     }
 
     void RemoveExistingFlexReferences(XElement rootElement)
@@ -82,11 +100,15 @@ class CsprojUpdater
         return false;
     }
 
-    static void AppendFlexReferencePairs(XElement rootElement, ManagedProject project)
+    static void AppendFlexReferencePairs(XElement rootElement, ManagedProject project, Dictionary<string, string> existingPackageVersions)
     {
         foreach(var flexReferencedProject in project.FlexReferencedProjects)
         {
             var relativeProjectPath = project.CsprojFile.ComputeRelativePathWithBackslashes(flexReferencedProject.CsprojFile);
+
+            var version = existingPackageVersions.TryGetValue(flexReferencedProject.PackageId, out var existingVersion)
+                              ? existingVersion
+                              : "*-*";
 
             rootElement.Add(
                 new XComment($" {flexReferencedProject.PackageId} — flex reference "),
@@ -94,7 +116,7 @@ class CsprojUpdater
                              new XAttribute("Condition", $"'$({flexReferencedProject.PropertyName})' == 'true'"),
                              new XElement("PackageReference",
                                           new XAttribute("Include", flexReferencedProject.PackageId),
-                                          new XAttribute("Version", "*-*"))),
+                                          new XAttribute("Version", version))),
                 new XElement("ItemGroup",
                              new XAttribute("Condition", $"'$({flexReferencedProject.PropertyName})' != 'true'"),
                              new XElement("ProjectReference",
