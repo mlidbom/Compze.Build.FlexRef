@@ -1,4 +1,5 @@
 <Solution>
+  <Folder Name="/example/" />
   <Folder Name="/example/src/">
     <Project Path="example/src/Acme.App/Acme.App.csproj" />
     <Project Path="example/src/Acme.Core/Acme.Core.csproj" />
@@ -8,6 +9,9 @@
     <Project Path="example/tests/Acme.App.Tests/Acme.App.Tests.csproj" />
     <Project Path="example/tests/Acme.Core.Tests/Acme.Core.Tests.csproj" />
     <Project Path="example/tests/Acme.Utilities.Tests/Acme.Utilities.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="CHANGELOG.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Compze.Build.FlexRef/Compze.Build.FlexRef.csproj" />

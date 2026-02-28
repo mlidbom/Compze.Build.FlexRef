@@ -56,3 +56,5 @@ nunit-*.xml
 *.user
 *.user
 nCrunchTemp_*
+# Un-ignore nCrunchTemp files used as test fixtures
+!**/Scenarios/**/nCrunchTemp_*

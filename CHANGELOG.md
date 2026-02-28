@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-02-28
+
+### Changed
+- Fix intermittent problem caused by NCrunch temporary csproj files
+
 ## [0.5.0-alpha.1] - 2026-02-22
 
 ### Changed

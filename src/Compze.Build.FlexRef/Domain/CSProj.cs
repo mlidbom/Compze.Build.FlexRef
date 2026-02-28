@@ -52,6 +52,7 @@ internal partial class CSProj
         return workspace.RootDirectory
             .EnumerateFiles(DomainConstants.CsprojSearchPattern, SearchOption.AllDirectories)
             .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
+            .Where(file => !DomainConstants.FilenamePrefixesToSkip.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             .Select(csprojFile => new CSProj(csprojFile, projectCollection, workspace))
             .ToList();
     }

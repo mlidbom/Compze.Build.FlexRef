@@ -34,6 +34,7 @@ class SlnxSolution
         workspace.RootDirectory
            .EnumerateFiles(DomainConstants.SlnxSearchPattern, SearchOption.AllDirectories)
            .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
+           .Where(file => !DomainConstants.FilenamePrefixesToSkip.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
            .Select(slnxFile => new SlnxSolution(slnxFile, workspace))
            .ToList();
 
