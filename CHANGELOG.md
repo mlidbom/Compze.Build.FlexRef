@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-03-01
+
+### Added
+- Package icon
+
 ## [0.6.1] - 2026-03-01
 
 ### Changed

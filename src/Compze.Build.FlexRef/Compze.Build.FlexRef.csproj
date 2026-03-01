@@ -20,6 +20,7 @@
     <PackageProjectUrl>https://github.com/mlidbom/Compze.Build.FlexRef</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mlidbom/Compze.Build.FlexRef</RepositoryUrl>
     <PackageTags>msbuild;nuget;project-reference;package-reference;solution;build;dotnet;cli</PackageTags>
+    <PackageIcon>compze-icon.png</PackageIcon>
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 
@@ -39,6 +40,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\compze-icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
