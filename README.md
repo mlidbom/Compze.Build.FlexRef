@@ -102,6 +102,14 @@ Or list packages explicitly instead:
 dotnet build /p:UsePackageReference_Acme_Utilities=true
 ```
 
+## Known Limitations
+
+### NCrunch and out-of-solution projects with flex references
+
+If NCrunch tries to pull in and compile projects not in the solution, the most likely explanation is that you have a standard `ProjectReference` to a project P that is not part of the current solution, where P in turn has flex references to other projects.
+
+**Fix:** Add P to the solution and run `flexref sync`.
+
 ## License
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
