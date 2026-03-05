@@ -20,7 +20,7 @@ When a .NET solution contains many projects that are also shared as NuGet packag
 
 Then you can set up any number of `.slnx` files to fit whatever parts of your project ecosystem you need to work with at the moment. 
 
-For instance, as we develop Compze, we can open the monolithic solution with 50+ projects (and growing fast) to do cross cutting refactoring. Or we can open Compze.Threading.slnx which contains just a handful. Both solutions use the exact same csproj files. In the monolithic solution everything becomes project references, in the threading solution almost everything becomes package references so builds and tests are super fast and your IDE can sit back and relax.
+For instance, as we develop Compze, we can open the monolithic solution with 70+ projects (and growing) to do cross cutting refactoring. Or we can open Compze.Threading.slnx which contains just a handful. Both solutions use the exact same csproj files. In the monolithic solution everything becomes project references, in the threading solution almost everything becomes package references so builds and tests are super fast and your IDE can sit back and relax.
 
 ## Quick Start
 
