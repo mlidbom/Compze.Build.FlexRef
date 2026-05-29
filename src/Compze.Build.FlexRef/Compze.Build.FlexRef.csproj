@@ -2,7 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- MSBuildLocator only accepts an SDK whose runtime is not newer than the running process.
+         RollForward=Major lets the tool start on a newer-major runtime when no .NET 10 runtime is
+         present, so it keeps working on machines that only have a future SDK installed. -->
+    <RollForward>Major</RollForward>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
@@ -25,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="17.*" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build" Version="18.*" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" />
     <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="all" />
   </ItemGroup>

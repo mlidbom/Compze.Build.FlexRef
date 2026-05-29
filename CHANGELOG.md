@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 
+## [0.7.0] - 2026-05-29
+
+### Changed
+- Migrated the CLI tool to .NET 10 (from .NET 8) and updated `Microsoft.Build` to 18.x. Running the
+  tool now requires the **.NET 10 SDK** instead of the .NET 8 SDK. This fixes
+  `InvalidOperationException: No instances of MSBuild could be detected` on machines that have the
+  .NET 10 SDK but no .NET 8 SDK. `RollForward=Major` is enabled so the tool keeps working on machines
+  that only have a newer-major SDK installed. The framework a project targets is unaffected — FlexRef
+  still operates on solutions whose projects target any framework.
+
 ## [0.6.2] - 2026-03-05
 
 ### Fixed
