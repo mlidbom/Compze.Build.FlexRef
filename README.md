@@ -2,6 +2,8 @@
 
 ProjectReference and PackageReference merged into one. Automatically switches based on the open solution.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mlidbom)
+
 ### The Problem
 
 When a .NET solution contains many projects that are also shared as NuGet packages, you face a choice:
