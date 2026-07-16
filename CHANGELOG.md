@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-16
+
+### Added
+- `<ExcludeDirectory Path="..." />` config element. Directories listed this way are skipped by both the
+  project and solution scans. This lets a repository point FlexRef away from a location that duplicates
+  projects already present elsewhere in the tree — most commonly a directory junction or symbolic link that
+  resolves back inside the repository (for example a docs website that junctions documented projects in for
+  co-located docs). Without it, each such project is discovered twice: FlexRef injects a spurious
+  `ProjectReference` into every consumer and rewrites the duplicated project's references relative to the
+  second location. Genuine symbolic links and junctions in directories that are not excluded remain fully
+  scannable.
 
 ## [0.7.0] - 2026-05-29
 

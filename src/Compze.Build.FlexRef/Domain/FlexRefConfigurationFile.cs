@@ -11,12 +11,14 @@ class FlexRefConfigurationFile
         public const string FlexRef = "FlexRef";
         public const string AutoDiscover = "AutoDiscover";
         public const string Exclude = "Exclude";
+        public const string ExcludeDirectory = "ExcludeDirectory";
         public const string Package = "Package";
     }
 
     static class Attributes
     {
         public const string Name = "Name";
+        public const string Path = "Path";
     }
 
     FlexRefWorkspace Workspace { get; }
@@ -24,6 +26,21 @@ class FlexRefConfigurationFile
     public bool UseAutoDiscover { get; private set; }
     public List<string> AutoDiscoverExclusions { get; private set; } = [];
     public List<string> ExplicitPackageNames { get; private set; } = [];
+
+    /// <summary>
+    /// Directory paths, relative to the workspace root, that scanning must not descend into — declared as
+    /// <c>&lt;ExcludeDirectory Path="..." /&gt;</c> elements in the config file.
+    /// </summary>
+    /// <remarks>
+    /// The scan matches projects by file name, so any directory that brings a copy of an already-present
+    /// project into the tree — most commonly a directory junction or symbolic link that points back inside
+    /// the repository — makes that project discovered twice. A double-discovered project both injects a
+    /// spurious <c>ProjectReference</c> into every consumer (pointing at the second location) and gets its
+    /// own references rewritten relative to that second location. Excluding the directory that holds the
+    /// duplicates keeps discovery seeing each project exactly once, at its real location, while leaving
+    /// genuine symbolic links and junctions elsewhere fully scannable.
+    /// </remarks>
+    public List<string> ExcludedDirectoryPaths { get; private set; } = [];
 
     public FlexRefConfigurationFile(FlexRefWorkspace workspace)
     {
@@ -78,6 +95,13 @@ class FlexRefConfigurationFile
                               .Where(name => name != null)
                               .Select(name => name!)
                               .ToList();
+
+        ExcludedDirectoryPaths = rootElement
+                                .Elements(Tags.ExcludeDirectory)
+                                .Select(element => element.Attribute(Attributes.Path)?.Value)
+                                .Where(path => !string.IsNullOrWhiteSpace(path))
+                                .Select(path => path!)
+                                .ToList();
     }
 
     void WriteDefaultConfigFile(List<string> discoveredPackageIds)

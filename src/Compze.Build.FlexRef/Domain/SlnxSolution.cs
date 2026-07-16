@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using Compze.Build.FlexRef.SystemCE.IOCE;
 
 namespace Compze.Build.FlexRef.Domain;
 
@@ -31,10 +30,8 @@ class SlnxSolution
     }
 
     public static List<SlnxSolution> FindAndParseAllSolutions(FlexRefWorkspace workspace) =>
-        workspace.RootDirectory
-           .EnumerateFiles(DomainConstants.SlnxSearchPattern, SearchOption.AllDirectories)
-           .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
-           .Where(file => !DomainConstants.FilenamePrefixesToSkip.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        workspace
+           .EnumerateScannableFiles(DomainConstants.SlnxSearchPattern)
            .Select(slnxFile => new SlnxSolution(slnxFile, workspace))
            .ToList();
 

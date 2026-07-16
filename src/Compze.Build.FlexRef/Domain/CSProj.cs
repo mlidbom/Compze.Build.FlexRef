@@ -1,6 +1,5 @@
 using Compze.Build.FlexRef.MicrosoftCE.BuildCE.EvaluationCE;
 using Compze.Build.FlexRef.SystemCE;
-using Compze.Build.FlexRef.SystemCE.IOCE;
 using Microsoft.Build.Evaluation;
 
 namespace Compze.Build.FlexRef.Domain;
@@ -49,10 +48,8 @@ internal partial class CSProj
     internal static List<CSProj> ScanDirectory(FlexRefWorkspace workspace)
     {
         using var projectCollection = new ProjectCollection();
-        return workspace.RootDirectory
-            .EnumerateFiles(DomainConstants.CsprojSearchPattern, SearchOption.AllDirectories)
-            .Where(file => !DomainConstants.DirectoriesToSkip.Any(file.HasDirectoryInPath))
-            .Where(file => !DomainConstants.FilenamePrefixesToSkip.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        return workspace
+            .EnumerateScannableFiles(DomainConstants.CsprojSearchPattern)
             .Select(csprojFile => new CSProj(csprojFile, projectCollection, workspace))
             .ToList();
     }

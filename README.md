@@ -86,6 +86,19 @@ Or list packages explicitly instead:
 </FlexRef>
 ```
 
+### Excluding a directory from scanning
+
+By default FlexRef scans every `.csproj` and `.slnx` under the repository root. If a directory brings copies of projects that already live elsewhere in the tree into scope — most commonly a **directory junction or symbolic link that resolves back inside the repository** — each such project gets discovered twice. That both injects a spurious `ProjectReference` into every consumer (pointing at the second location) and rewrites the duplicated project's own references relative to that second location. Point FlexRef away from the directory that holds the duplicates with `<ExcludeDirectory>`:
+
+```xml
+<FlexRef>
+  <AutoDiscover />
+  <ExcludeDirectory Path="docs/website/linked-projects" />
+</FlexRef>
+```
+
+`Path` is relative to the repository root and excludes the whole subtree from both the project and solution scans. Genuine symbolic links and junctions in directories you do **not** list are still scanned normally — only the named subtree is skipped. Multiple `<ExcludeDirectory>` elements are allowed.
+
 ## Compatibility
 
 ### Confirmed to work with:

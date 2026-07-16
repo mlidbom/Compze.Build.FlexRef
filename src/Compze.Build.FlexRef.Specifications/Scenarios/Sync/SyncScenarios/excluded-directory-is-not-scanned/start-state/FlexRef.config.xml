@@ -1,0 +1,4 @@
+<FlexRef>
+  <AutoDiscover />
+  <ExcludeDirectory Path="docs" />
+</FlexRef>
