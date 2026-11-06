@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write  # lets the nuget.org Trusted Publishing step request the GitHub OIDC token that nuget.org exchanges for a short-lived API key
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,8 +46,18 @@ jobs:
             --configuration Release \
             --output ./artifacts
 
+      # nuget.org Trusted Publishing: a policy on nuget.org (owner MagnusLidbom) trusts repository
+      # mlidbom/Compze.Build.FlexRef, workflow file publish.yml. Renaming this file or the repository stops
+      # publishing until that policy is updated. The key expires after one hour, so this step stays
+      # immediately before the push rather than before the build and test run.
+      - name: Get short-lived nuget.org API key (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: MagnusLidbom
+
       - name: Push to NuGet.org
-        run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
       - name: Create GitHub Release
         env:
