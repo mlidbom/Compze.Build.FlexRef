@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-17
+
 ### Fixed
 - The tool starts on the newest .NET runtime installed (`RollForward=LatestMajor`, was `Major`). With `Major` it
   started on the .NET 10 runtime whenever one was installed, and in a repository whose `global.json` pins a newer
