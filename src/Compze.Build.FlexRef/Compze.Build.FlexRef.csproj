@@ -4,9 +4,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <!-- MSBuildLocator only accepts an SDK whose runtime is not newer than the running process.
-         RollForward=Major lets the tool start on a newer-major runtime when no .NET 10 runtime is
-         present, so it keeps working on machines that only have a future SDK installed. -->
-    <RollForward>Major</RollForward>
+         RollForward=LatestMajor starts the tool on the newest runtime installed, so it can load the newest
+         SDK, such as one a repository's global.json pins. With Major it started on the .NET 10 runtime
+         whenever one was installed, and found no MSBuild in a repository that pins a newer SDK. -->
+    <RollForward>LatestMajor</RollForward>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>

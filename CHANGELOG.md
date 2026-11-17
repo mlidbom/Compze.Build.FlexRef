@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- The tool starts on the newest .NET runtime installed (`RollForward=LatestMajor`, was `Major`). With `Major` it
+  started on the .NET 10 runtime whenever one was installed, and in a repository whose `global.json` pins a newer
+  SDK it failed with `No instances of MSBuild could be detected`, since MSBuildLocator only accepts an SDK whose
+  runtime is not newer than the running process. Consumers no longer need to set `DOTNET_ROLL_FORWARD` around it.
+
 ## [0.8.0] - 2026-07-16
 
 ### Added
